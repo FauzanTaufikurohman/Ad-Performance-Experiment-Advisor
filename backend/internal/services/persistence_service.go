@@ -12,6 +12,7 @@ import (
 func SaveUpload(
 	ctx context.Context,
 	pool *pgxpool.Pool,
+	userID int64,
 	filename string,
 	records []models.AdRecord,
 	metrics models.MetricSummary,
@@ -19,6 +20,9 @@ func SaveUpload(
 ) (int64, error) {
 	if pool == nil {
 		return 0, fmt.Errorf("koneksi database belum tersedia")
+	}
+	if userID < 1 {
+		return 0, fmt.Errorf("ID pengguna tidak valid")
 	}
 
 	tx, err := pool.Begin(ctx)
@@ -31,10 +35,10 @@ func SaveUpload(
 
 	var uploadID int64
 	err = tx.QueryRow(ctx, `
-		INSERT INTO uploads (filename, status, row_count)
-		VALUES ($1, 'processing', $2)
+		INSERT INTO uploads (user_id, filename, status, row_count)
+		VALUES ($1, $2, 'processing', $3)
 		RETURNING id
-	`, filename, len(records)).Scan(&uploadID)
+	`, userID, filename, len(records)).Scan(&uploadID)
 	if err != nil {
 		return 0, fmt.Errorf("gagal menyimpan upload: %w", err)
 	}

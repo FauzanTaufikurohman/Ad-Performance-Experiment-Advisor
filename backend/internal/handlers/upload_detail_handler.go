@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/middleware"
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/models"
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/services"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -49,8 +52,9 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 		err = pool.QueryRow(ctx,
 			`SELECT id, filename, status, row_count, created_at
 			 FROM uploads
-			 WHERE id = $1`,
+			 WHERE id = $1 AND user_id = $2`,
 			uploadID,
+			middleware.UserID(c),
 		).Scan(
 			&upload.ID,
 			&upload.Filename,
@@ -60,7 +64,7 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 		)
 
 		if err != nil {
-			if err.Error() == "no rows in result set" {
+			if errors.Is(err, pgx.ErrNoRows) {
 				c.JSON(http.StatusNotFound, gin.H{
 					"success": false,
 					"message": "Upload tidak ditemukan.",
@@ -220,15 +224,32 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		readiness := services.EvaluateExperimentReadiness(records, metrics)
+		var aiAdvisor map[string]any
+		err = pool.QueryRow(ctx, `
+			SELECT response
+			FROM ai_advisor_results
+			WHERE upload_id = $1
+			ORDER BY created_at DESC, id DESC
+			LIMIT 1
+		`, uploadID).Scan(&aiAdvisor)
+		if err != nil && !errors.Is(err, pgx.ErrNoRows) {
+			log.Printf("ERROR: gagal mengambil hasil AI upload %d: %v", uploadID, err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"success": false,
+				"message": "Gagal mengambil hasil AI.",
+			})
+			return
+		}
 
 		c.JSON(http.StatusOK, gin.H{
 			"success": true,
 			"data": gin.H{
-				"upload":    upload,
-				"metrics":   metrics,
-				"findings":  findings,
-				"readiness": readiness,
-				"records":   records,
+				"upload":     upload,
+				"metrics":    metrics,
+				"findings":   findings,
+				"readiness":  readiness,
+				"records":    records,
+				"ai_advisor": aiAdvisor,
 			},
 		})
 	}

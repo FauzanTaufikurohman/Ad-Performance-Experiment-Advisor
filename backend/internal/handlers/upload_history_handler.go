@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -49,7 +50,8 @@ func GetUploadHistory(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		err = pool.QueryRow(
 			ctx,
-			`SELECT COUNT(*) FROM uploads`,
+			`SELECT COUNT(*) FROM uploads WHERE user_id = $1`,
+			middleware.UserID(c),
 		).Scan(&total)
 
 		if err != nil {
@@ -67,8 +69,10 @@ func GetUploadHistory(pool *pgxpool.Pool) gin.HandlerFunc {
 			ctx,
 			`SELECT id, filename, status, row_count, created_at
 			 FROM uploads
+			 WHERE user_id = $1
 			 ORDER BY id DESC
-			 LIMIT $1 OFFSET $2`,
+			 LIMIT $2 OFFSET $3`,
+			middleware.UserID(c),
 			limit,
 			offset,
 		)

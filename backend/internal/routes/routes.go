@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/handlers"
+	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/middleware"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,9 +44,16 @@ func SetupRoutes(pool *pgxpool.Pool) *gin.Engine {
 		})
 	})
 
-	router.POST("/api/uploads", handlers.UploadCSVWithDB(pool))
-	router.GET("/api/uploads", handlers.GetUploadHistory(pool))
-	router.GET("/api/uploads/:id", handlers.GetUploadDetail(pool))
+	router.POST("/api/auth/register", handlers.Register(pool))
+	router.POST("/api/auth/login", handlers.Login(pool))
+
+	protected := router.Group("/api")
+	protected.Use(middleware.RequireAuth())
+	protected.GET("/auth/me", handlers.CurrentUser())
+	protected.POST("/uploads", handlers.UploadCSVWithDB(pool))
+	protected.GET("/uploads", handlers.GetUploadHistory(pool))
+	protected.GET("/uploads/:id", handlers.GetUploadDetail(pool))
+	protected.POST("/ai/analyze", handlers.AnalyzeUploadWithAI(pool))
 
 	return router
 }

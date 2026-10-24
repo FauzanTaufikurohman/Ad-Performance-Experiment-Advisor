@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/middleware"
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/services"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -96,6 +97,7 @@ func uploadCSV(c *gin.Context, pool *pgxpool.Pool) {
 		uploadID, err = services.SaveUpload(
 			ctx,
 			pool,
+			middleware.UserID(c),
 			filepath.Base(fileHeader.Filename),
 			records,
 			metrics,
