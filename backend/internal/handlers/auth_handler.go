@@ -18,15 +18,25 @@ import (
 )
 
 type authRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Name             string `json:"name"`
+	OrganizationName string `json:"organization_name"`
+	Email            string `json:"email" binding:"required"`
+	Password         string `json:"password" binding:"required"`
 }
 
 type authUser struct {
-	ID    int64  `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID               int64  `json:"id"`
+	Name             string `json:"name"`
+	Email            string `json:"email"`
+	OrganizationID   int64  `json:"organization_id"`
+	OrganizationName string `json:"organization_name"`
+	OrganizationRole string `json:"organization_role"`
+}
+
+type organizationMembership struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	Role string `json:"role"`
 }
 
 func Register(pool *pgxpool.Pool) gin.HandlerFunc {
@@ -45,11 +55,19 @@ func Register(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		name := strings.TrimSpace(request.Name)
+		organizationName := strings.TrimSpace(request.OrganizationName)
 		email := strings.ToLower(strings.TrimSpace(request.Email))
 		if name == "" || len(name) > 100 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"success": false,
 				"message": "Nama wajib diisi dan maksimal 100 karakter.",
+			})
+			return
+		}
+		if organizationName == "" || len(organizationName) > 150 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "Nama organisasi wajib diisi dan maksimal 150 karakter.",
 			})
 			return
 		}
@@ -86,8 +104,16 @@ func Register(pool *pgxpool.Pool) gin.HandlerFunc {
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 		defer cancel()
 
+		tx, err := pool.Begin(ctx)
+		if err != nil {
+			log.Printf("ERROR: gagal memulai pendaftaran organisasi: %v", err)
+			authServerError(c)
+			return
+		}
+		defer func() { _ = tx.Rollback(ctx) }()
+
 		var user authUser
-		err = pool.QueryRow(ctx, `
+		err = tx.QueryRow(ctx, `
 			INSERT INTO users (name, email, password_hash)
 			VALUES ($1, $2, $3)
 			RETURNING id, name, email
@@ -106,7 +132,56 @@ func Register(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		respondWithToken(c, user)
+		err = tx.QueryRow(ctx, `
+			INSERT INTO organizations (name, created_by_user_id)
+			VALUES ($1, $2)
+			RETURNING id
+		`, organizationName, user.ID).Scan(&user.OrganizationID)
+		if err != nil {
+			log.Printf("ERROR: gagal membuat organisasi pendaftaran: %v", err)
+			authServerError(c)
+			return
+		}
+		user.OrganizationName = organizationName
+		user.OrganizationRole = middleware.RoleOrganizationOwner
+
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO organization_memberships (organization_id, user_id, role)
+			VALUES ($1, $2, $3)
+		`, user.OrganizationID, user.ID, user.OrganizationRole); err != nil {
+			log.Printf("ERROR: gagal membuat membership pemilik: %v", err)
+			authServerError(c)
+			return
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO workspaces (
+				organization_id, name, is_default, created_by_user_id
+			)
+			VALUES ($1, 'Default workspace', TRUE, $2)
+		`, user.OrganizationID, user.ID); err != nil {
+			log.Printf("ERROR: gagal membuat workspace awal: %v", err)
+			authServerError(c)
+			return
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO audit_logs (
+				organization_id, actor_user_id, action, resource_type, resource_id
+			)
+			VALUES ($1, $2, 'organization.created', 'organization', $1::TEXT)
+		`, user.OrganizationID, user.ID); err != nil {
+			log.Printf("ERROR: gagal mencatat audit pendaftaran organisasi: %v", err)
+			authServerError(c)
+			return
+		}
+		if err := tx.Commit(ctx); err != nil {
+			log.Printf("ERROR: gagal menyimpan pendaftaran organisasi: %v", err)
+			authServerError(c)
+			return
+		}
+
+		respondWithSession(c, user, []organizationMembership{{
+			ID: user.OrganizationID, Name: organizationName, Role: user.OrganizationRole,
+		}})
 	}
 }
 
@@ -154,11 +229,28 @@ func Login(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		respondWithToken(c, user)
+		memberships, err := loadOrganizationMemberships(ctx, pool, user.ID)
+		if err != nil {
+			log.Printf("ERROR: gagal mengambil organisasi pengguna %d: %v", user.ID, err)
+			authServerError(c)
+			return
+		}
+		if len(memberships) == 0 {
+			c.JSON(http.StatusForbidden, gin.H{
+				"success": false,
+				"message": "Akun belum memiliki organisasi. Hubungi administrator.",
+			})
+			return
+		}
+
+		user.OrganizationID = memberships[0].ID
+		user.OrganizationName = memberships[0].Name
+		user.OrganizationRole = memberships[0].Role
+		respondWithSession(c, user, memberships)
 	}
 }
 
-func CurrentUser() gin.HandlerFunc {
+func CurrentUser(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := middleware.AuthenticatedUser(c)
 		if !ok {
@@ -168,22 +260,148 @@ func CurrentUser() gin.HandlerFunc {
 			})
 			return
 		}
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
+		memberships, err := loadOrganizationMemberships(ctx, pool, claims.UserID)
+		if err != nil {
+			log.Printf("ERROR: gagal mengambil organisasi pengguna %d: %v", claims.UserID, err)
+			authServerError(c)
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"success": true,
-			"user": authUser{
-				ID:    claims.UserID,
-				Name:  claims.Name,
-				Email: claims.Email,
-			},
+			"success":       true,
+			"user":          authUserFromClaims(claims),
+			"organizations": memberships,
 		})
 	}
 }
 
-func respondWithToken(c *gin.Context, user authUser) {
+func SelectOrganization(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var request struct {
+			OrganizationID int64 `json:"organization_id" binding:"required,gt=0"`
+		}
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"success": false,
+				"message": "organization_id wajib berupa bilangan positif.",
+			})
+			return
+		}
+
+		claims, ok := middleware.AuthenticatedUser(c)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "Sesi tidak valid. Silakan masuk kembali.",
+			})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+		defer cancel()
+		var user authUser
+		user.ID = claims.UserID
+		user.Name = claims.Name
+		user.Email = claims.Email
+		err := pool.QueryRow(ctx, `
+			SELECT o.id, o.name,
+			       CASE WHEN pa.user_id IS NOT NULL
+			            THEN 'platform_super_admin'
+			            ELSE m.role
+			       END
+			FROM organizations o
+			LEFT JOIN organization_memberships m
+				ON m.organization_id = o.id AND m.user_id = $1
+			LEFT JOIN platform_administrators pa ON pa.user_id = $1
+			WHERE o.id = $2
+			  AND (m.user_id IS NOT NULL OR pa.user_id IS NOT NULL)
+		`, claims.UserID, request.OrganizationID).Scan(
+			&user.OrganizationID,
+			&user.OrganizationName,
+			&user.OrganizationRole,
+		)
+		if errors.Is(err, pgx.ErrNoRows) {
+			c.JSON(http.StatusForbidden, gin.H{
+				"success": false,
+				"message": "Anda bukan anggota organisasi tersebut.",
+			})
+			return
+		}
+		if err != nil {
+			log.Printf("ERROR: gagal memilih organisasi pengguna %d: %v", claims.UserID, err)
+			authServerError(c)
+			return
+		}
+
+		memberships, err := loadOrganizationMemberships(ctx, pool, claims.UserID)
+		if err != nil {
+			log.Printf("ERROR: gagal mengambil organisasi pengguna %d: %v", claims.UserID, err)
+			authServerError(c)
+			return
+		}
+		respondWithSession(c, user, memberships)
+	}
+}
+
+func loadOrganizationMemberships(
+	ctx context.Context,
+	pool *pgxpool.Pool,
+	userID int64,
+) ([]organizationMembership, error) {
+	rows, err := pool.Query(ctx, `
+		SELECT o.id, o.name,
+		       CASE WHEN pa.user_id IS NOT NULL
+		            THEN 'platform_super_admin'
+		            ELSE m.role
+		       END
+		FROM organizations o
+		LEFT JOIN organization_memberships m
+			ON m.organization_id = o.id AND m.user_id = $1
+		LEFT JOIN platform_administrators pa ON pa.user_id = $1
+		WHERE m.user_id IS NOT NULL OR pa.user_id IS NOT NULL
+		ORDER BY o.created_at, o.id
+	`, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	memberships := make([]organizationMembership, 0)
+	for rows.Next() {
+		var membership organizationMembership
+		if err := rows.Scan(&membership.ID, &membership.Name, &membership.Role); err != nil {
+			return nil, err
+		}
+		memberships = append(memberships, membership)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return memberships, nil
+}
+
+func authUserFromClaims(claims middleware.Claims) authUser {
+	return authUser{
+		ID:               claims.UserID,
+		Name:             claims.Name,
+		Email:            claims.Email,
+		OrganizationID:   claims.OrganizationID,
+		OrganizationName: claims.Organization,
+		OrganizationRole: claims.Role,
+	}
+}
+
+func respondWithSession(
+	c *gin.Context,
+	user authUser,
+	memberships []organizationMembership,
+) {
 	token, err := middleware.CreateToken(middleware.Claims{
-		UserID: user.ID,
-		Email:  user.Email,
-		Name:   user.Name,
+		UserID:         user.ID,
+		OrganizationID: user.OrganizationID,
+		Email:          user.Email,
+		Name:           user.Name,
 	})
 	if err != nil {
 		log.Printf("ERROR: gagal membuat token autentikasi: %v", err)
@@ -192,9 +410,10 @@ func respondWithToken(c *gin.Context, user authUser) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"success": true,
-		"token":   token,
-		"user":    user,
+		"success":       true,
+		"token":         token,
+		"user":          user,
+		"organizations": memberships,
 	})
 }
 

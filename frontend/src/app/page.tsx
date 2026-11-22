@@ -9,6 +9,7 @@ import {
   formatNumber,
   type HistoryItem,
 } from "@/lib/advisor";
+import UploadActionLink from "@/components/permissions/upload-action-link";
 
 type UploadResponse = {
   success: boolean;
@@ -42,11 +43,11 @@ function getTotal(json: UploadResponse, uploads: HistoryItem[]) {
 }
 
 function formatDate(value: string) {
-  if (!value) return "—";
+  if (!value) return "Tanggal tidak tersedia";
 
   const date = new Date(value);
 
-  if (Number.isNaN(date.getTime())) return "—";
+  if (Number.isNaN(date.getTime())) return "Tanggal tidak tersedia";
 
   return date.toLocaleString("id-ID", {
     dateStyle: "medium",
@@ -107,21 +108,21 @@ export default function OverviewPage() {
 
   const stats = [
     {
-      label: "Total datasets",
+      label: "Total dataset",
       value: formatNumber(totalUploads, 0),
       detail: "Dataset yang tercatat di backend",
       icon: "database",
     },
     {
-      label: "Recent datasets",
+      label: "Dataset terbaru",
       value: formatNumber(uploads.length, 0),
       detail: "Dataset pada halaman pertama",
       icon: "files",
     },
     {
-      label: "Rows processed",
+      label: "Baris pada dataset terbaru",
       value: formatNumber(totalRows, 0),
-      detail: "Baris dari dataset yang ditampilkan",
+      detail: "Jumlah baris pada dataset di halaman pertama",
       icon: "chart",
     },
   ];
@@ -131,25 +132,24 @@ export default function OverviewPage() {
       <div className="mx-auto max-w-7xl space-y-8 px-5 py-8 sm:px-8">
         <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <p className="text-sm font-medium text-slate-500">
-              Workspace / Overview
+            <p className="text-sm font-medium text-slate-600">
+              Ruang kerja kampanye
             </p>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-              Overview
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Pantau dataset iklan yang diunggah dan lanjutkan
-              analisis performa kampanye dari satu tempat.
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              Ringkasan data
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
+              Tinjau dataset yang tersimpan, lalu pilih alur untuk memeriksa
+              kampanye atau mengevaluasi varian.
             </p>
           </div>
 
-          <Link
+          <UploadActionLink
             href="/uploads/new"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-blue-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
           >
-            <span className="text-lg leading-none">+</span>
-            Upload campaign data
-          </Link>
+            Unggah data kampanye
+          </UploadActionLink>
         </section>
 
         {error && (
@@ -159,16 +159,16 @@ export default function OverviewPage() {
           >
             <div>
               <p className="font-medium text-red-800">
-                Data overview gagal dimuat
+                Ringkasan gagal dimuat
               </p>
               <p className="mt-1 text-sm text-red-700">{error}</p>
             </div>
             <button
               type="button"
               onClick={() => void loadOverview()}
-              className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-medium text-red-800 hover:bg-red-100"
+              className="min-h-11 rounded-md border border-red-400 bg-white px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-800"
             >
-              Coba lagi
+              Muat ulang data
             </button>
           </div>
         )}
@@ -176,15 +176,15 @@ export default function OverviewPage() {
         <section>
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-base font-semibold text-slate-950">
-              Workspace summary
+              Ringkasan workspace
             </h2>
             <button
               type="button"
               onClick={() => void loadOverview()}
               disabled={loading}
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
+              className="min-h-11 rounded-md border border-slate-400 bg-white px-3 py-2 text-sm font-medium text-slate-800 transition hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 disabled:opacity-50"
             >
-              {loading ? "Refreshing..." : "Refresh"}
+              {loading ? "Memuat..." : "Muat ulang"}
             </button>
           </div>
 
@@ -245,7 +245,7 @@ export default function OverviewPage() {
                 </div>
 
                 <p className="mt-5 text-3xl font-semibold tracking-tight text-slate-950">
-                  {loading ? "—" : stat.value}
+                  {loading ? "Memuat..." : stat.value}
                 </p>
                 <p className="mt-2 text-xs text-slate-500">
                   {stat.detail}
@@ -260,7 +260,7 @@ export default function OverviewPage() {
             <div className="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 sm:px-6">
               <div>
                 <h2 className="font-semibold text-slate-950">
-                  Recent uploads
+                  Dataset terbaru
                 </h2>
                 <p className="mt-1 text-sm text-slate-500">
                   Dataset terbaru yang masuk ke workspace.
@@ -268,20 +268,15 @@ export default function OverviewPage() {
               </div>
               <Link
                 href="/history"
-                className="shrink-0 text-sm font-medium text-slate-700 hover:text-slate-950"
+                className="inline-flex min-h-11 shrink-0 items-center text-sm font-medium text-slate-800 hover:text-slate-950 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
               >
-                View all →
+                Lihat semua
               </Link>
             </div>
 
             {loading ? (
-              <div className="space-y-4 p-6">
-                {[1, 2, 3].map((item) => (
-                  <div
-                    key={item}
-                    className="h-12 animate-pulse rounded-lg bg-slate-100"
-                  />
-                ))}
+              <div role="status" className="p-6 text-sm text-slate-800">
+                Memuat dataset terbaru...
               </div>
             ) : uploads.length > 0 ? (
               <div className="divide-y divide-slate-100">
@@ -299,7 +294,7 @@ export default function OverviewPage() {
                           {upload.filename}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          {formatNumber(upload.row_count, 0)} rows ·{" "}
+                          {formatNumber(upload.row_count, 0)} baris ·{" "}
                           {formatDate(upload.created_at)}
                         </p>
                       </div>
@@ -307,14 +302,14 @@ export default function OverviewPage() {
 
                     <Link
                       href={`/analysis/${upload.id}`}
-                      className="shrink-0 self-start rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 sm:self-auto"
+                      className="inline-flex min-h-11 shrink-0 items-center self-start rounded-md border border-slate-400 px-3 py-2 text-xs font-semibold text-slate-800 transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 sm:self-auto"
                     >
-                      View analysis
+                      Buka analisis
                     </Link>
                   </div>
                 ))}
               </div>
-            ) : (
+            ) : !error ? (
               <div className="px-6 py-12 text-center">
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-500">
                   +
@@ -323,77 +318,91 @@ export default function OverviewPage() {
                   Belum ada dataset
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Upload file CSV untuk mulai menganalisis performa iklan.
+                  Unggah file CSV untuk mulai menganalisis performa iklan.
                 </p>
-                <Link
+                <UploadActionLink
                   href="/uploads/new"
-                  className="mt-4 inline-flex rounded-lg bg-slate-950 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800"
+                  className="mt-4 inline-flex min-h-11 items-center rounded-md bg-blue-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
                 >
-                  Upload CSV
-                </Link>
+                  Unggah CSV
+                </UploadActionLink>
               </div>
+            ) : (
+              <p className="p-6 text-sm text-slate-700">
+                Dataset tidak ditampilkan sampai pemuatan berhasil.
+              </p>
             )}
           </div>
 
           <div className="space-y-4">
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.02] sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-                Get started
-              </p>
               <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-950">
-                Turn campaign data into experiments.
+                Mulai dari data kampanye
               </h2>
               <p className="mt-2 text-sm leading-6 text-slate-600">
-                Unggah data, periksa metrik performa, lalu gunakan AI
-                Advisor untuk menemukan hipotesis eksperimen yang bisa diuji.
+                Unggah CSV untuk meninjau metrik, temuan, dan kemungkinan
+                eksperimen berdasarkan data yang tersimpan.
               </p>
-              <Link
+              <UploadActionLink
                 href="/uploads/new"
-                className="mt-5 inline-flex w-full items-center justify-center rounded-xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
               >
-                Start new analysis
-              </Link>
+                Unggah data kampanye
+              </UploadActionLink>
             </article>
 
-            <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.02] sm:p-6">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-50 text-violet-700">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.7"
-                    className="h-5 w-5"
-                    aria-hidden="true"
-                  >
-                    <path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1" />
-                    <circle cx="12" cy="12" r="4" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 className="font-semibold text-slate-950">
-                    Experiment Advisor
-                  </h2>
-                  <p className="mt-1 text-xs text-slate-500">
-                    AI-assisted recommendations
-                  </p>
-                </div>
-              </div>
-              <p className="mt-4 text-sm leading-6 text-slate-600">
-                Buka rekomendasi eksperimen dari hasil analisis dataset
-                yang sudah kamu unggah.
-              </p>
-              <Link
-                href="/experiments"
-                className="mt-4 inline-flex items-center text-sm font-semibold text-slate-800 hover:text-violet-700"
-              >
-                Explore experiments →
-              </Link>
-            </article>
+            <nav aria-labelledby="workflow-title" className="border-t border-slate-300 pt-5">
+              <h2 id="workflow-title" className="font-semibold text-slate-950">
+                Pilih alur kerja
+              </h2>
+              <ul className="mt-2 divide-y divide-slate-200">
+                {[
+                  {
+                    href: "/campaigns",
+                    title: "Kesehatan kampanye",
+                    description: "Tinjau metrik dan temuan per kampanye.",
+                  },
+                  {
+                    href: "/scenarios",
+                    title: "Skenario diagnostik",
+                    description: "Filter temuan berdasarkan kondisi.",
+                  },
+                  {
+                    href: "/decisions",
+                    title: "Inbox keputusan",
+                    description: "Tinjau rekomendasi yang tersimpan.",
+                  },
+                  {
+                    href: "/experiments",
+                    title: "Experiment Lab",
+                    description: "Evaluasi varian dengan data kampanye.",
+                  },
+                  {
+                    href: "/compare",
+                    title: "Bandingkan dataset",
+                    description: "Periksa perbedaan metrik dua dataset.",
+                  },
+                ].map((workflow) => (
+                  <li key={workflow.href}>
+                    <Link
+                      href={workflow.href}
+                      className="block min-h-11 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                    >
+                      <span className="block text-sm font-semibold text-slate-900">
+                        {workflow.title}
+                      </span>
+                      <span className="mt-1 block text-sm text-slate-700">
+                        {workflow.description}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
         </section>
 
-        <p className="pb-2 text-center text-xs text-slate-400">
+        <p className="pb-2 text-center text-xs text-slate-600">
           Advisora · Campaign performance workspace
         </p>
       </div>

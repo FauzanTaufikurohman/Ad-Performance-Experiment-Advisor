@@ -2,9 +2,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { API, apiFetch, formatNumber } from "@/lib/advisor";
+import UploadActionLink from "@/components/permissions/upload-action-link";
 
 type UploadItem = {
   id: number;
@@ -221,12 +221,12 @@ export default function HistoryPage() {
           </p>
         </div>
 
-        <Link
+        <UploadActionLink
           href="/uploads/new"
           className="inline-flex items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-800"
         >
           + Upload dataset
-        </Link>
+        </UploadActionLink>
       </header>
       {/* Summary */}
       <section className="grid gap-4 sm:grid-cols-2">
@@ -347,12 +347,12 @@ export default function HistoryPage() {
             </p>
 
             {!search && (
-              <Link
+              <UploadActionLink
                 href="/uploads/new"
                 className="mt-5 inline-flex rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800"
               >
                 Upload CSV pertama
-              </Link>
+              </UploadActionLink>
             )}
           </div>
         )}

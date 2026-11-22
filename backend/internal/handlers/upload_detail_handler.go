@@ -52,9 +52,9 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 		err = pool.QueryRow(ctx,
 			`SELECT id, filename, status, row_count, created_at
 			 FROM uploads
-			 WHERE id = $1 AND user_id = $2`,
+			 WHERE id = $1 AND organization_id = $2`,
 			uploadID,
-			middleware.UserID(c),
+			middleware.OrganizationID(c),
 		).Scan(
 			&upload.ID,
 			&upload.Filename,
@@ -165,7 +165,7 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 		}
 
 		findingRows, err := pool.Query(ctx,
-			`SELECT code, severity, title, description
+			`SELECT code, severity, title, description, recommendation
 			 FROM findings
 			 WHERE upload_id = $1
 			 ORDER BY id ASC`,
@@ -184,10 +184,11 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		for findingRows.Next() {
 			var (
-				code        string
-				severity    string
-				title       string
-				description string
+				code           string
+				severity       string
+				title          string
+				description    string
+				recommendation string
 			)
 
 			if err := findingRows.Scan(
@@ -195,6 +196,7 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 				&severity,
 				&title,
 				&description,
+				&recommendation,
 			); err != nil {
 				findingRows.Close()
 				c.JSON(http.StatusInternalServerError, gin.H{
@@ -205,10 +207,11 @@ func GetUploadDetail(pool *pgxpool.Pool) gin.HandlerFunc {
 			}
 
 			findings = append(findings, gin.H{
-				"code":        code,
-				"severity":    severity,
-				"title":       title,
-				"description": description,
+				"code":           code,
+				"severity":       severity,
+				"title":          title,
+				"description":    description,
+				"recommendation": recommendation,
 			})
 		}
 

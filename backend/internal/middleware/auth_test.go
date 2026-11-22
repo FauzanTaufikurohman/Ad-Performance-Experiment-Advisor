@@ -12,9 +12,10 @@ func TestTokenRoundTripAndTampering(t *testing.T) {
 	t.Setenv("AUTH_SECRET", "test-secret-with-at-least-32-characters")
 
 	token, err := CreateToken(Claims{
-		UserID: 42,
-		Email:  "user@example.com",
-		Name:   "Test User",
+		UserID:         42,
+		OrganizationID: 7,
+		Email:          "user@example.com",
+		Name:           "Test User",
 	})
 	if err != nil {
 		t.Fatalf("CreateToken() error = %v", err)
@@ -24,8 +25,9 @@ func TestTokenRoundTripAndTampering(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ParseToken() error = %v", err)
 	}
-	if claims.UserID != 42 || claims.Email != "user@example.com" {
-		t.Fatalf("claims = %+v, want user 42 and matching email", claims)
+	if claims.UserID != 42 || claims.OrganizationID != 7 ||
+		claims.Email != "user@example.com" {
+		t.Fatalf("claims = %+v, want user 42, organization 7, and matching email", claims)
 	}
 
 	if _, err := ParseToken(token + "tampered"); err == nil {
@@ -37,7 +39,7 @@ func TestTokenAcceptsLegacyJWTSecret(t *testing.T) {
 	t.Setenv("AUTH_SECRET", "")
 	t.Setenv("JWT_SECRET", "legacy-test-secret-with-at-least-32-characters")
 
-	token, err := CreateToken(Claims{UserID: 7})
+	token, err := CreateToken(Claims{UserID: 7, OrganizationID: 3})
 	if err != nil {
 		t.Fatalf("CreateToken() error = %v", err)
 	}
@@ -48,7 +50,7 @@ func TestTokenAcceptsLegacyJWTSecret(t *testing.T) {
 
 func TestRequireAuthRejectsMissingToken(t *testing.T) {
 	router := gin.New()
-	router.GET("/private", RequireAuth(), func(c *gin.Context) {
+	router.GET("/private", RequireAuth(nil), func(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 	})
 	response := httptest.NewRecorder()

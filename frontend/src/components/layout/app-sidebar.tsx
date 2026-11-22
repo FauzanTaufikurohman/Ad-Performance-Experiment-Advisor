@@ -1,87 +1,157 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth/auth-provider";
+import { canWriteCampaignData } from "@/lib/advisor";
 
-const navigation = [
+const navigation: Array<{
+  label: string;
+  items: Array<{
+    label: string;
+    href: string;
+    requiresCampaignWrite?: boolean;
+  }>;
+}> = [
   {
-    label: "WORKSPACE",
+    label: "Diagnose",
     items: [
-      { label: "Overview", href: "/", icon: "▦" },
-      { label: "Import Data", href: "/uploads/new", icon: "↑" },
-      { label: "Analysis History", href: "/history", icon: "◷" },
-      { label: "Experiments", href: "/experiments", icon: "◇" },
+      { label: "Overview", href: "/" },
+      { label: "Campaign health", href: "/campaigns" },
+      { label: "Scenario lab", href: "/scenarios" },
+      { label: "Decision inbox", href: "/decisions" },
     ],
+  },
+  {
+    label: "Evaluate",
+    items: [
+      { label: "Experiment lab", href: "/experiments" },
+      { label: "Compare datasets", href: "/compare" },
+    ],
+  },
+  {
+    label: "Data",
+    items: [
+      { label: "Analysis history", href: "/history" },
+      {
+        label: "Import data",
+        href: "/uploads/new",
+        requiresCampaignWrite: true,
+      },
+    ],
+  },
+  {
+    label: "Manage",
+    items: [{ label: "Organization & members", href: "/organization" }],
   },
 ];
 
-export default function AppSidebar() {
+type AppSidebarProps = {
+  mobileOpen: boolean;
+  onNavigate: () => void;
+};
+
+export default function AppSidebar({
+  mobileOpen,
+  onNavigate,
+}: AppSidebarProps) {
   const pathname = usePathname();
+  const { user } = useAuth();
+  const canWrite = canWriteCampaignData(user?.organization_role);
+  const visibleNavigation = navigation
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.requiresCampaignWrite || canWrite,
+      ),
+    }))
+    .filter((group) => group.items.length > 0);
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <Link href="/" className="flex h-[72px] items-center gap-3 border-b border-slate-200 px-6">
-        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-700 text-lg font-bold text-white">
-          A
-        </div>
-        <div>
-          <p className="text-sm font-semibold tracking-tight text-slate-900">
-            Advisora
-          </p>
-          <p className="mt-0.5 text-[10px] font-medium uppercase tracking-[0.14em] text-slate-500">
-            Ads intelligence
-          </p>
-        </div>
-      </Link>
+    <>
+      {mobileOpen && (
+        <button
+          type="button"
+          aria-label="Tutup menu navigasi"
+          onClick={onNavigate}
+          className="fixed inset-x-0 bottom-0 top-[72px] z-30 bg-slate-950/25 md:hidden"
+        />
+      )}
 
-      <nav className="flex-1 space-y-7 overflow-y-auto px-4 py-6">
-        {navigation.map((group) => (
-          <div key={group.label}>
-            <p className="mb-3 px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-400">
-              {group.label}
-            </p>
+      <aside
+        id="primary-navigation"
+        aria-label="Navigasi utama"
+        className={`${
+          mobileOpen ? "fixed flex" : "hidden md:flex"
+        } inset-y-0 left-0 z-40 w-[min(18rem,88vw)] flex-col border-r border-slate-200 bg-white md:sticky md:top-0 md:h-screen md:w-60 md:shrink-0`}
+        style={mobileOpen ? { top: 72, height: "calc(100dvh - 72px)" } : undefined}
+      >
+        <Link
+          href="/"
+          onClick={onNavigate}
+          className="flex h-[72px] shrink-0 items-center gap-3 border-b border-slate-200 px-5"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-blue-700 text-lg font-bold text-white">
+            A
+          </span>
+          <span>
+            <span className="block text-sm font-semibold tracking-tight text-slate-900">
+              Advisora
+            </span>
+            <span className="mt-0.5 block text-xs text-slate-600">
+              Campaign operations
+            </span>
+          </span>
+        </Link>
 
-            <div className="space-y-1">
-              {group.items.map((item) => {
-                const active =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname === item.href ||
-                      pathname.startsWith(`${item.href}/`);
+        <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+          {visibleNavigation.map((group) => (
+            <section key={group.label} aria-labelledby={`nav-${group.label}`}>
+              <h2
+                id={`nav-${group.label}`}
+                className="mb-2 px-3 text-xs font-semibold text-slate-600"
+              >
+                {group.label}
+              </h2>
+              <ul className="space-y-1">
+                {group.items.map((item) => {
+                  const active =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname === item.href ||
+                        pathname.startsWith(`${item.href}/`);
 
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                      active
-                        ? "bg-blue-50 font-medium text-blue-700"
-                        : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                    }`}
-                  >
-                    <span className="flex h-5 w-5 items-center justify-center text-base">
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
-      </nav>
+                  return (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        onClick={onNavigate}
+                        aria-current={active ? "page" : undefined}
+                        className={`flex min-h-11 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 ${
+                          active
+                            ? "bg-blue-50 font-semibold text-blue-800"
+                            : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </nav>
 
-      <div className="border-t border-slate-200 p-4">
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="border-t border-slate-200 p-4">
           <p className="text-xs font-medium text-slate-700">
-            Ad Performance Advisor
+            Data source: CSV uploads
           </p>
-          <p className="mt-1 text-xs leading-5 text-slate-500">
-            Analyze performance. Discover experiments.
+          <p className="mt-1 text-xs leading-5 text-slate-600">
+            Analisis mengikuti data yang tersimpan di workspace Anda.
           </p>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }

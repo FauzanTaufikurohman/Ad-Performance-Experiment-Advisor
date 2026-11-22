@@ -50,8 +50,8 @@ func GetUploadHistory(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		err = pool.QueryRow(
 			ctx,
-			`SELECT COUNT(*) FROM uploads WHERE user_id = $1`,
-			middleware.UserID(c),
+			`SELECT COUNT(*) FROM uploads WHERE organization_id = $1`,
+			middleware.OrganizationID(c),
 		).Scan(&total)
 
 		if err != nil {
@@ -69,10 +69,10 @@ func GetUploadHistory(pool *pgxpool.Pool) gin.HandlerFunc {
 			ctx,
 			`SELECT id, filename, status, row_count, created_at
 			 FROM uploads
-			 WHERE user_id = $1
+			 WHERE organization_id = $1
 			 ORDER BY id DESC
 			 LIMIT $2 OFFSET $3`,
-			middleware.UserID(c),
+			middleware.OrganizationID(c),
 			limit,
 			offset,
 		)

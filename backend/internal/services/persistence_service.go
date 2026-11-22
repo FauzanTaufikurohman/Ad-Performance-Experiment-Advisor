@@ -13,6 +13,7 @@ func SaveUpload(
 	ctx context.Context,
 	pool *pgxpool.Pool,
 	userID int64,
+	organizationID int64,
 	filename string,
 	records []models.AdRecord,
 	metrics models.MetricSummary,
@@ -23,6 +24,9 @@ func SaveUpload(
 	}
 	if userID < 1 {
 		return 0, fmt.Errorf("ID pengguna tidak valid")
+	}
+	if organizationID < 1 {
+		return 0, fmt.Errorf("ID organisasi tidak valid")
 	}
 
 	tx, err := pool.Begin(ctx)
@@ -35,10 +39,14 @@ func SaveUpload(
 
 	var uploadID int64
 	err = tx.QueryRow(ctx, `
-		INSERT INTO uploads (user_id, filename, status, row_count)
-		VALUES ($1, $2, 'processing', $3)
+		INSERT INTO uploads (
+			user_id, organization_id, workspace_id, filename, status, row_count
+		)
+		SELECT $1, $2, w.id, $3, 'processing', $4
+		FROM workspaces w
+		WHERE w.organization_id = $2 AND w.is_default
 		RETURNING id
-	`, userID, filename, len(records)).Scan(&uploadID)
+	`, userID, organizationID, filename, len(records)).Scan(&uploadID)
 	if err != nil {
 		return 0, fmt.Errorf("gagal menyimpan upload: %w", err)
 	}
@@ -110,15 +118,17 @@ func SaveUpload(
 				code,
 				severity,
 				title,
-				description
+				description,
+				recommendation
 			)
-			VALUES ($1, $2, $3, $4, $5)
+			VALUES ($1, $2, $3, $4, $5, $6)
 		`,
 			uploadID,
 			finding.Code,
 			finding.Severity,
 			finding.Title,
 			finding.Description,
+			finding.Recommendation,
 		)
 		if err != nil {
 			return 0, fmt.Errorf(

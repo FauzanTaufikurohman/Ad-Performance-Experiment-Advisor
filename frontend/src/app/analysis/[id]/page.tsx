@@ -4,9 +4,12 @@
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-provider";
+import UploadActionLink from "@/components/permissions/upload-action-link";
 import {
   API,
   apiFetch,
+  canWriteCampaignData,
   emptyMetrics,
   formatMoney,
   formatNumber,
@@ -58,6 +61,8 @@ function displayValue(value: unknown): string {
 function AnalysisDetailContent() {
   const params = useParams<{ id: string }>();
   const uploadId = params.id;
+  const { user } = useAuth();
+  const canRunAI = canWriteCampaignData(user?.organization_role);
 
   const [analysis, setAnalysis] = useState<AnalysisData | null>(null);
   const [advisor, setAdvisor] = useState<AIAdvisor | null>(null);
@@ -273,13 +278,19 @@ function AnalysisDetailContent() {
             </p>
           </div>
 
-          <button
-            onClick={() => void runAIAnalysis()}
-            disabled={analyzing}
-            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-blue-700 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {analyzing ? "Menganalisis..." : "Jalankan AI Advisor"}
-          </button>
+          {canRunAI ? (
+            <button
+              onClick={() => void runAIAnalysis()}
+              disabled={analyzing}
+              className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-md bg-blue-800 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
+            >
+              {analyzing ? "Menganalisis..." : "Jalankan AI Advisor"}
+            </button>
+          ) : (
+            <p className="text-sm leading-6 text-slate-700">
+              AI Advisor hanya dapat dijalankan oleh anggota dengan izin analisis.
+            </p>
+          )}
         </div>
       </div>
 
@@ -381,8 +392,9 @@ function AnalysisDetailContent() {
               AI Advisor belum dijalankan
             </p>
             <p className="mt-1 text-sm text-slate-500">
-              Pilih “Jalankan AI Advisor” untuk meminta analisis terhadap
-              dataset ini.
+              {canRunAI
+                ? "Jalankan AI Advisor untuk meminta analisis terhadap dataset ini."
+                : "Hasil AI belum tersedia. Role Anda hanya dapat meninjau analisis yang sudah dijalankan."}
             </p>
           </div>
         )}
@@ -566,12 +578,12 @@ function AnalysisDetailContent() {
 
       {/* Navigation */}
       <div className="flex flex-wrap gap-3">
-        <Link
+        <UploadActionLink
           href="/uploads/new"
           className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           Upload dataset lain
-        </Link>
+        </UploadActionLink>
 
         <Link
           href="/history"

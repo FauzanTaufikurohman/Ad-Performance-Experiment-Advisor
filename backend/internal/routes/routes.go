@@ -1,10 +1,13 @@
 package routes
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/handlers"
 	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/middleware"
+	"github.com/FauzanTaufikurohman/ad-performance-advisor/backend/internal/repositories"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -43,17 +46,112 @@ func SetupRoutes(pool *pgxpool.Pool) *gin.Engine {
 			"message": "Ad Performance API is running",
 		})
 	})
+	router.GET("/api/health/live", func(c *gin.Context) {
+		c.Status(http.StatusNoContent)
+	})
+	router.GET("/api/health/ready", func(c *gin.Context) {
+		if pool == nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"success": false,
+				"message": "Database belum tersedia.",
+			})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 2*time.Second)
+		defer cancel()
+		if err := pool.Ping(ctx); err != nil {
+			c.JSON(http.StatusServiceUnavailable, gin.H{
+				"success": false,
+				"message": "Database belum siap melayani permintaan.",
+			})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{
+			"success": true,
+			"message": "Ad Performance API siap melayani permintaan.",
+		})
+	})
 
 	router.POST("/api/auth/register", handlers.Register(pool))
 	router.POST("/api/auth/login", handlers.Login(pool))
 
 	protected := router.Group("/api")
-	protected.Use(middleware.RequireAuth())
-	protected.GET("/auth/me", handlers.CurrentUser())
-	protected.POST("/uploads", handlers.UploadCSVWithDB(pool))
+	protected.Use(middleware.RequireAuth(pool))
+	protected.GET("/auth/me", handlers.CurrentUser(pool))
+	protected.POST("/auth/organizations/select", handlers.SelectOrganization(pool))
+	protected.GET("/organizations/current", handlers.GetCurrentOrganization(pool))
+	protected.GET("/organizations/members", handlers.GetOrganizationMembers(pool))
+	protected.POST(
+		"/organizations/members",
+		middleware.RequireRoles(
+			middleware.RolePlatformSuperAdmin,
+			middleware.RoleOrganizationOwner,
+			middleware.RoleOrganizationAdmin,
+		),
+		handlers.AddOrganizationMember(pool),
+	)
+	protected.POST(
+		"/uploads",
+		middleware.RequireRoles(
+			middleware.RolePlatformSuperAdmin,
+			middleware.RoleOrganizationOwner,
+			middleware.RoleOrganizationAdmin,
+			middleware.RoleCMOExecutive,
+			middleware.RoleMarketingManager,
+			middleware.RoleCampaignSpecialist,
+			middleware.RoleDataAnalyst,
+		),
+		handlers.UploadCSVWithDB(pool),
+	)
 	protected.GET("/uploads", handlers.GetUploadHistory(pool))
 	protected.GET("/uploads/:id", handlers.GetUploadDetail(pool))
-	protected.POST("/ai/analyze", handlers.AnalyzeUploadWithAI(pool))
+	protected.GET("/decisions", handlers.GetDecisionInbox(pool))
+	analysisRoles := middleware.RequireRoles(
+		middleware.RolePlatformSuperAdmin,
+		middleware.RoleOrganizationOwner,
+		middleware.RoleOrganizationAdmin,
+		middleware.RoleCMOExecutive,
+		middleware.RoleMarketingManager,
+		middleware.RoleCampaignSpecialist,
+		middleware.RoleDataAnalyst,
+	)
+	protected.POST("/ai/analyze", analysisRoles, handlers.AnalyzeUploadWithAI(pool))
+	var bayesianStatsStore handlers.BayesianStatsStore
+	if pool != nil {
+		bayesianStatsStore = repositories.BayesianStatsRepository{Pool: pool}
+	}
+	protected.GET(
+		"/v1/experiments/results",
+		handlers.GetExperimentHistory(bayesianStatsStore),
+	)
+	protected.POST(
+		"/v1/experiments/evaluate",
+		middleware.RequireRoles(
+			middleware.RolePlatformSuperAdmin,
+			middleware.RoleOrganizationOwner,
+			middleware.RoleOrganizationAdmin,
+			middleware.RoleCMOExecutive,
+			middleware.RoleMarketingManager,
+			middleware.RoleCampaignSpecialist,
+			middleware.RoleDataAnalyst,
+		),
+		handlers.EvaluateExperiment(bayesianStatsStore),
+	)
+	protected.POST(
+		"/v1/experiments/monte-carlo",
+		middleware.RequireRoles(
+			middleware.RolePlatformSuperAdmin,
+			middleware.RoleOrganizationOwner,
+			middleware.RoleOrganizationAdmin,
+			middleware.RoleCMOExecutive,
+			middleware.RoleMarketingManager,
+			middleware.RoleCampaignSpecialist,
+			middleware.RoleDataAnalyst,
+		),
+		handlers.RunMonteCarloExperiment(bayesianStatsStore),
+	)
 
 	return router
 }

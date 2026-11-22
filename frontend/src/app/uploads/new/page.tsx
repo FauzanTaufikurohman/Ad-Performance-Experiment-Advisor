@@ -2,10 +2,18 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { API, apiFetch, type UploadResult } from "@/lib/advisor";
+import Link from "next/link";
+import { useAuth } from "@/components/auth/auth-provider";
+import {
+  API,
+  apiFetch,
+  canWriteCampaignData,
+  type UploadResult,
+} from "@/lib/advisor";
 
 export default function NewUploadPage() {
   const router = useRouter();
+  const { status, user } = useAuth();
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,6 +72,39 @@ export default function NewUploadPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (status === "loading") {
+    return (
+      <p role="status" className="mx-auto max-w-3xl p-6 text-sm text-slate-800">
+        Memeriksa izin unggah...
+      </p>
+    );
+  }
+
+  if (!canWriteCampaignData(user?.organization_role)) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-5 px-4 py-8 sm:px-6">
+        <header>
+          <p className="text-sm font-medium text-slate-600">Data workspace</p>
+          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+            Unggah data terbatas
+          </h2>
+        </header>
+        <section className="border-y border-slate-300 py-5">
+          <p className="text-sm leading-6 text-slate-800">
+            Role Anda dapat meninjau data, tetapi tidak dapat mengunggah CSV.
+            Minta Owner, Admin, atau tim marketing untuk menambahkan dataset.
+          </p>
+          <Link
+            href="/"
+            className="mt-4 inline-flex min-h-11 items-center rounded-md border border-slate-400 px-4 text-sm font-semibold text-slate-800 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+          >
+            Kembali ke ringkasan
+          </Link>
+        </section>
+      </div>
+    );
   }
 
   return (

@@ -98,6 +98,7 @@ func uploadCSV(c *gin.Context, pool *pgxpool.Pool) {
 			ctx,
 			pool,
 			middleware.UserID(c),
+			middleware.OrganizationID(c),
 			filepath.Base(fileHeader.Filename),
 			records,
 			metrics,

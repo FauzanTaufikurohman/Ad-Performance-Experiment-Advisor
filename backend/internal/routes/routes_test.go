@@ -46,6 +46,57 @@ func TestCORSHeadersForUploads(t *testing.T) {
 	})
 }
 
+func TestExperimentEndpointsRequireAuthentication(t *testing.T) {
+	router := SetupRoutes(nil)
+
+	for _, route := range []struct {
+		method string
+		path   string
+	}{
+		{method: http.MethodGet, path: "/api/v1/experiments/results"},
+		{method: http.MethodPost, path: "/api/v1/experiments/evaluate"},
+		{method: http.MethodPost, path: "/api/v1/experiments/monte-carlo"},
+		{method: http.MethodGet, path: "/api/decisions"},
+	} {
+		request := httptest.NewRequest(route.method, route.path, nil)
+		response := httptest.NewRecorder()
+
+		router.ServeHTTP(response, request)
+
+		if response.Code != http.StatusUnauthorized {
+			t.Errorf("%s %s status = %d, want %d", route.method, route.path, response.Code, http.StatusUnauthorized)
+		}
+	}
+}
+
+func TestHealthEndpoints(t *testing.T) {
+	router := SetupRoutes(nil)
+
+	t.Run("live", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		router.ServeHTTP(
+			response,
+			httptest.NewRequest(http.MethodGet, "/api/health/live", nil),
+		)
+
+		if response.Code != http.StatusNoContent {
+			t.Fatalf("status = %d, want %d", response.Code, http.StatusNoContent)
+		}
+	})
+
+	t.Run("not ready without database", func(t *testing.T) {
+		response := httptest.NewRecorder()
+		router.ServeHTTP(
+			response,
+			httptest.NewRequest(http.MethodGet, "/api/health/ready", nil),
+		)
+
+		if response.Code != http.StatusServiceUnavailable {
+			t.Fatalf("status = %d, want %d", response.Code, http.StatusServiceUnavailable)
+		}
+	})
+}
+
 func assertCORSHeaders(t *testing.T, response *httptest.ResponseRecorder) {
 	t.Helper()
 

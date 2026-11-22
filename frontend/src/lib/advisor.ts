@@ -5,6 +5,55 @@ export type AuthUser = {
   id: number;
   name: string;
   email: string;
+  organization_id: number;
+  organization_name: string;
+  organization_role: string;
+};
+
+export type OrganizationMembership = {
+  id: number;
+  name: string;
+  role: string;
+};
+
+const campaignWriteRoles = new Set([
+  "platform_super_admin",
+  "organization_owner",
+  "organization_admin",
+  "cmo_executive",
+  "marketing_manager",
+  "campaign_specialist",
+  "data_analyst",
+]);
+
+export function canWriteCampaignData(role: string | null | undefined) {
+  return role != null && campaignWriteRoles.has(role);
+}
+
+export type BayesianExperimentResult = {
+  experiment_id: string;
+  metric: string;
+  status: string;
+  iterations: number;
+  winner?: string;
+  tied: boolean;
+  budget_allocation_pct: Record<string, number>;
+  arms: Array<{
+    name: string;
+    impressions: number;
+    clicks: number;
+    conversions: number;
+    probability_to_be_best: number;
+    expected_loss: number;
+    cold_start: boolean;
+    ad_fatigued: boolean;
+  }>;
+};
+
+export type BayesianExperimentRun = {
+  result: BayesianExperimentResult;
+  evaluated_by: string;
+  evaluated_at: string;
 };
 
 export async function apiFetch(

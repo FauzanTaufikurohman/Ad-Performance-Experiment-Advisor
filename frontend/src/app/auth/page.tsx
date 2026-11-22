@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { API, type AuthUser } from "@/lib/advisor";
+import {
+  API,
+  type AuthUser,
+  type OrganizationMembership,
+} from "@/lib/advisor";
 import { useAuth } from "@/components/auth/auth-provider";
 
 type AuthResponse = {
@@ -10,6 +14,7 @@ type AuthResponse = {
   message?: string;
   token?: string;
   user?: AuthUser;
+  organizations?: OrganizationMembership[];
 };
 
 async function parseAuthResponse(response: Response): Promise<AuthResponse> {
@@ -34,6 +39,7 @@ export default function AuthPage() {
   const { status, acceptSession } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [name, setName] = useState("");
+  const [organizationName, setOrganizationName] = useState("");
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [registerEmail, setRegisterEmail] = useState("");
@@ -80,6 +86,7 @@ export default function AuthPage() {
             registering
               ? {
                   name,
+                  organization_name: organizationName,
                   email: registerEmail,
                   password: registerPassword,
                 }
@@ -93,7 +100,7 @@ export default function AuthPage() {
         throw new Error(json.message || "Autentikasi gagal.");
       }
 
-      acceptSession(json.token, json.user);
+      acceptSession(json.token, json.user, json.organizations ?? []);
       router.replace("/");
     } catch (err) {
       setError(
@@ -161,6 +168,18 @@ export default function AuthPage() {
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   placeholder="Nama Anda"
+                  tabIndex={mode === "register" ? 0 : -1}
+                />
+              </label>
+              <label className="field">
+                <span>Nama organisasi</span>
+                <input
+                  autoComplete="organization"
+                  required
+                  maxLength={150}
+                  value={organizationName}
+                  onChange={(event) => setOrganizationName(event.target.value)}
+                  placeholder="Nama organisasi"
                   tabIndex={mode === "register" ? 0 : -1}
                 />
               </label>

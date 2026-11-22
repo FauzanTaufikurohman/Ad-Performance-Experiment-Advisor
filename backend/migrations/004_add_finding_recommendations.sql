@@ -1,0 +1,6 @@
+BEGIN;
+
+ALTER TABLE findings
+    ADD COLUMN IF NOT EXISTS recommendation TEXT NOT NULL DEFAULT '';
+
+COMMIT;

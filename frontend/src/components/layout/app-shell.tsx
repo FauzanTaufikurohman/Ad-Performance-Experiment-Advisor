@@ -2,7 +2,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
 import AppSidebar from "./app-sidebar";
@@ -30,6 +30,8 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { status } = useAuth();
+  const [openMenuPath, setOpenMenuPath] = useState<string | null>(null);
+  const mobileMenuOpen = openMenuPath === pathname;
   const isAuthPage = pathname === "/auth";
 
   useEffect(() => {
@@ -37,6 +39,17 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
       router.replace("/auth");
     }
   }, [isAuthPage, router, status]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpenMenuPath(null);
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [mobileMenuOpen]);
 
   if (isAuthPage) return children;
   if (status === "unauthenticated") {
@@ -49,13 +62,29 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white">
+      <a
+        href="#main-content"
+        className="sr-only z-50 rounded-md bg-white px-4 py-3 text-sm font-semibold text-slate-950 focus:not-sr-only focus:fixed focus:left-3 focus:top-3"
+      >
+        Lewati ke konten utama
+      </a>
       <div className="flex min-h-screen">
-        <AppSidebar />
+        <AppSidebar
+          mobileOpen={mobileMenuOpen}
+          onNavigate={() => setOpenMenuPath(null)}
+        />
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <AppHeader />
+          <AppHeader
+            mobileMenuOpen={mobileMenuOpen}
+            onToggleMobileMenu={() =>
+              setOpenMenuPath((current) =>
+                current === pathname ? null : pathname,
+              )
+            }
+          />
 
-          <main className="min-w-0 flex-1 bg-slate-50/60">
+          <main id="main-content" className="min-w-0 flex-1 bg-slate-50/60">
             {children}
           </main>
         </div>

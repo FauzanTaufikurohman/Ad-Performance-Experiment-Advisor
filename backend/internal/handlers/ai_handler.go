@@ -45,9 +45,9 @@ func AnalyzeUploadWithAI(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		var uploadID int64
 		err := pool.QueryRow(ctx,
-			`SELECT id FROM uploads WHERE id = $1 AND user_id = $2`,
+			`SELECT id FROM uploads WHERE id = $1 AND organization_id = $2`,
 			request.UploadID,
-			middleware.UserID(c),
+			middleware.OrganizationID(c),
 		).Scan(&uploadID)
 
 		if errors.Is(err, pgx.ErrNoRows) {

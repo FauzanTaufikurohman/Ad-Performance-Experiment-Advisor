@@ -51,6 +51,15 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
 ::selection {
   background: #dbeafe;
   color: #1e3a8a;
