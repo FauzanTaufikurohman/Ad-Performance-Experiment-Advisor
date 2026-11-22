@@ -1,0 +1,121 @@
+﻿date,campaign,impressions,clicks,spend,conversions,conversion_value
+2026-09-01,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,12258,223,485.98,0,0.00
+2026-09-06,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,13342,277,485.85,0,0.00
+2026-09-08,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,10462,131,183.07,0,0.00
+2026-09-10,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,5533,154,142.40,0,0.00
+2026-09-18,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,11229,105,106.91,0,0.00
+2026-09-21,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,2244,73,105.15,0,0.00
+2026-09-23,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,8406,221,296.26,0,0.00
+2026-10-02,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,4947,138,104.71,0,0.00
+2026-10-25,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,12309,205,91.16,0,0.00
+2026-10-27,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,11529,367,194.05,0,0.00
+2026-10-30,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,14202,452,1243.25,0,0.00
+2026-10-31,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,16071,310,468.44,0,0.00
+2026-11-02,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,13850,258,87.50,0,0.00
+2026-11-05,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,8110,125,135.12,0,0.00
+2026-11-14,Sales | Leonard Inc | Lake Lauraberg | Prospecting | Control,3263,30,25.82,0,0.00
+2026-09-01,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",10877,109,36.76,0,0.00
+2026-09-06,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",1900,14,20.40,0,0.00
+2026-09-08,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",8452,49,68.90,0,0.00
+2026-09-10,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",5178,40,111.86,0,0.00
+2026-09-18,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",1912,23,28.53,0,0.00
+2026-09-21,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",13977,213,433.36,0,0.00
+2026-09-23,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",10864,92,248.82,0,0.00
+2026-10-02,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",2554,29,54.06,0,0.00
+2026-10-25,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",11537,174,393.88,0,0.00
+2026-10-27,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",6771,69,144.62,0,0.00
+2026-10-30,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",4243,31,18.54,0,0.00
+2026-10-31,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",5411,48,95.20,0,0.00
+2026-11-02,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",10078,110,148.88,0,0.00
+2026-11-05,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",5623,29,68.77,0,0.00
+2026-11-14,"Sales | Marshall, Mcmahon and Wolf | Frankshire | Retargeting",4632,70,146.70,0,0.00
+2026-09-01,Sales | Jones Ltd | New Annaton | Lookalike,7186,86,201.67,0,0.00
+2026-09-06,Sales | Jones Ltd | New Annaton | Lookalike,11497,217,185.95,0,0.00
+2026-09-08,Sales | Jones Ltd | New Annaton | Lookalike,15223,219,246.31,0,0.00
+2026-09-10,Sales | Jones Ltd | New Annaton | Lookalike,3878,45,18.04,0,0.00
+2026-09-18,Sales | Jones Ltd | New Annaton | Lookalike,12445,247,541.88,0,0.00
+2026-09-21,Sales | Jones Ltd | New Annaton | Lookalike,17167,349,704.25,0,0.00
+2026-09-23,Sales | Jones Ltd | New Annaton | Lookalike,11638,59,57.52,0,0.00
+2026-10-02,Sales | Jones Ltd | New Annaton | Lookalike,7509,164,249.52,0,0.00
+2026-10-25,Sales | Jones Ltd | New Annaton | Lookalike,1985,27,35.89,0,0.00
+2026-10-27,Sales | Jones Ltd | New Annaton | Lookalike,7922,80,77.89,0,0.00
+2026-10-30,Sales | Jones Ltd | New Annaton | Lookalike,10699,207,409.63,0,0.00
+2026-10-31,Sales | Jones Ltd | New Annaton | Lookalike,4378,57,19.85,0,0.00
+2026-11-02,Sales | Jones Ltd | New Annaton | Lookalike,15563,259,524.62,0,0.00
+2026-11-05,Sales | Jones Ltd | New Annaton | Lookalike,9748,73,152.07,0,0.00
+2026-11-14,Sales | Jones Ltd | New Annaton | Lookalike,12534,222,229.13,0,0.00
+2026-09-01,Sales | Little LLC | Port Kylieside | Broad,5721,74,205.64,0,0.00
+2026-09-06,Sales | Little LLC | Port Kylieside | Broad,3403,128,285.74,0,0.00
+2026-09-08,Sales | Little LLC | Port Kylieside | Broad,17171,412,867.52,0,0.00
+2026-09-10,Sales | Little LLC | Port Kylieside | Broad,5945,152,174.16,0,0.00
+2026-09-18,Sales | Little LLC | Port Kylieside | Broad,13020,144,347.20,0,0.00
+2026-09-21,Sales | Little LLC | Port Kylieside | Broad,11042,109,126.02,0,0.00
+2026-09-23,Sales | Little LLC | Port Kylieside | Broad,6480,114,233.82,0,0.00
+2026-10-02,Sales | Little LLC | Port Kylieside | Broad,16171,456,914.71,0,0.00
+2026-10-25,Sales | Little LLC | Port Kylieside | Broad,12558,163,281.26,0,0.00
+2026-10-27,Sales | Little LLC | Port Kylieside | Broad,8167,254,517.48,0,0.00
+2026-10-30,Sales | Little LLC | Port Kylieside | Broad,14604,318,380.49,0,0.00
+2026-10-31,Sales | Little LLC | Port Kylieside | Broad,7101,113,229.26,0,0.00
+2026-11-02,Sales | Little LLC | Port Kylieside | Broad,5881,191,94.20,0,0.00
+2026-11-05,Sales | Little LLC | Port Kylieside | Broad,6547,202,387.58,0,0.00
+2026-11-14,Sales | Little LLC | Port Kylieside | Broad,4237,81,97.09,0,0.00
+2026-09-01,Sales | Lawrence-Jones | Mariaburgh | Catalog,9679,68,145.13,0,0.00
+2026-09-06,Sales | Lawrence-Jones | Mariaburgh | Catalog,2865,16,22.53,0,0.00
+2026-09-08,Sales | Lawrence-Jones | Mariaburgh | Catalog,4475,50,69.40,0,0.00
+2026-09-10,Sales | Lawrence-Jones | Mariaburgh | Catalog,15474,152,236.74,0,0.00
+2026-09-18,Sales | Lawrence-Jones | Mariaburgh | Catalog,14750,143,136.90,0,0.00
+2026-09-21,Sales | Lawrence-Jones | Mariaburgh | Catalog,2225,28,68.37,0,0.00
+2026-09-23,Sales | Lawrence-Jones | Mariaburgh | Catalog,8610,29,12.66,0,0.00
+2026-10-02,Sales | Lawrence-Jones | Mariaburgh | Catalog,14790,95,262.51,0,0.00
+2026-10-25,Sales | Lawrence-Jones | Mariaburgh | Catalog,17740,196,193.18,0,0.00
+2026-10-27,Sales | Lawrence-Jones | Mariaburgh | Catalog,16537,195,355.08,0,0.00
+2026-10-30,Sales | Lawrence-Jones | Mariaburgh | Catalog,9435,81,134.31,0,0.00
+2026-10-31,Sales | Lawrence-Jones | Mariaburgh | Catalog,16865,224,313.72,0,0.00
+2026-11-02,Sales | Lawrence-Jones | Mariaburgh | Catalog,6872,28,40.47,0,0.00
+2026-11-05,Sales | Lawrence-Jones | Mariaburgh | Catalog,14609,196,303.07,0,0.00
+2026-11-14,Sales | Lawrence-Jones | Mariaburgh | Catalog,15362,154,72.44,0,0.00
+2026-09-01,Sales | Dunn-Morris | Brittanyview | Video views,11866,117,132.87,0,0.00
+2026-09-06,Sales | Dunn-Morris | Brittanyview | Video views,6764,142,367.52,0,0.00
+2026-09-08,Sales | Dunn-Morris | Brittanyview | Video views,16803,197,65.79,0,0.00
+2026-09-10,Sales | Dunn-Morris | Brittanyview | Video views,16402,83,56.27,0,0.00
+2026-09-18,Sales | Dunn-Morris | Brittanyview | Video views,10132,194,162.54,0,0.00
+2026-09-21,Sales | Dunn-Morris | Brittanyview | Video views,10311,67,131.58,0,0.00
+2026-09-23,Sales | Dunn-Morris | Brittanyview | Video views,2401,44,31.70,0,0.00
+2026-10-02,Sales | Dunn-Morris | Brittanyview | Video views,6493,58,54.39,0,0.00
+2026-10-25,Sales | Dunn-Morris | Brittanyview | Video views,8049,180,124.42,0,0.00
+2026-10-27,Sales | Dunn-Morris | Brittanyview | Video views,12878,95,214.51,0,0.00
+2026-10-30,Sales | Dunn-Morris | Brittanyview | Video views,15750,202,64.06,0,0.00
+2026-10-31,Sales | Dunn-Morris | Brittanyview | Video views,6058,75,90.04,0,0.00
+2026-11-02,Sales | Dunn-Morris | Brittanyview | Video views,13517,61,125.92,0,0.00
+2026-11-05,Sales | Dunn-Morris | Brittanyview | Video views,6673,124,244.85,0,0.00
+2026-11-14,Sales | Dunn-Morris | Brittanyview | Video views,15179,133,233.20,0,0.00
+2026-09-01,Sales | Cox-Johnston | Anthonyton | Website visitors,10929,199,122.80,0,0.00
+2026-09-06,Sales | Cox-Johnston | Anthonyton | Website visitors,16281,449,877.46,0,0.00
+2026-09-08,Sales | Cox-Johnston | Anthonyton | Website visitors,5324,75,22.97,0,0.00
+2026-09-10,Sales | Cox-Johnston | Anthonyton | Website visitors,2609,41,106.62,0,0.00
+2026-09-18,Sales | Cox-Johnston | Anthonyton | Website visitors,3272,93,233.47,0,0.00
+2026-09-21,Sales | Cox-Johnston | Anthonyton | Website visitors,14555,173,458.89,0,0.00
+2026-09-23,Sales | Cox-Johnston | Anthonyton | Website visitors,5498,99,168.74,0,0.00
+2026-10-02,Sales | Cox-Johnston | Anthonyton | Website visitors,9958,86,42.63,0,0.00
+2026-10-25,Sales | Cox-Johnston | Anthonyton | Website visitors,2865,78,123.60,0,0.00
+2026-10-27,Sales | Cox-Johnston | Anthonyton | Website visitors,11712,177,494.35,0,0.00
+2026-10-30,Sales | Cox-Johnston | Anthonyton | Website visitors,3508,26,11.32,0,0.00
+2026-10-31,Sales | Cox-Johnston | Anthonyton | Website visitors,8191,186,366.85,0,0.00
+2026-11-02,Sales | Cox-Johnston | Anthonyton | Website visitors,7383,130,248.96,0,0.00
+2026-11-05,Sales | Cox-Johnston | Anthonyton | Website visitors,17253,326,397.91,0,0.00
+2026-11-14,Sales | Cox-Johnston | Anthonyton | Website visitors,11641,298,511.49,0,0.00
+2026-09-01,Sales | Livingston LLC | Pattonfort | Advantage+,17729,250,626.61,0,0.00
+2026-09-06,Sales | Livingston LLC | Pattonfort | Advantage+,11704,155,86.06,0,0.00
+2026-09-08,Sales | Livingston LLC | Pattonfort | Advantage+,2379,23,41.97,0,0.00
+2026-09-10,Sales | Livingston LLC | Pattonfort | Advantage+,10478,34,60.26,0,0.00
+2026-09-18,Sales | Livingston LLC | Pattonfort | Advantage+,8396,145,185.00,0,0.00
+2026-09-21,Sales | Livingston LLC | Pattonfort | Advantage+,4652,89,134.53,0,0.00
+2026-09-23,Sales | Livingston LLC | Pattonfort | Advantage+,6628,56,121.64,0,0.00
+2026-10-02,Sales | Livingston LLC | Pattonfort | Advantage+,8362,100,167.97,0,0.00
+2026-10-25,Sales | Livingston LLC | Pattonfort | Advantage+,14129,160,264.18,0,0.00
+2026-10-27,Sales | Livingston LLC | Pattonfort | Advantage+,17707,234,637.56,0,0.00
+2026-10-30,Sales | Livingston LLC | Pattonfort | Advantage+,16845,341,693.58,0,0.00
+2026-10-31,Sales | Livingston LLC | Pattonfort | Advantage+,8641,123,175.84,0,0.00
+2026-11-02,Sales | Livingston LLC | Pattonfort | Advantage+,3262,49,104.84,0,0.00
+2026-11-05,Sales | Livingston LLC | Pattonfort | Advantage+,12048,204,405.97,0,0.00
+2026-11-14,Sales | Livingston LLC | Pattonfort | Advantage+,9845,93,93.40,0,0.00

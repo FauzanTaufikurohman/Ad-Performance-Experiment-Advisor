@@ -278,7 +278,7 @@ function AnalysisDetailContent() {
             </p>
           </div>
 
-          {canRunAI ? (
+          {canRunAI && (
             <button
               onClick={() => void runAIAnalysis()}
               disabled={analyzing}
@@ -286,10 +286,6 @@ function AnalysisDetailContent() {
             >
               {analyzing ? "Menganalisis..." : "Jalankan AI Advisor"}
             </button>
-          ) : (
-            <p className="text-sm leading-6 text-slate-700">
-              AI Advisor hanya dapat dijalankan oleh anggota dengan izin analisis.
-            </p>
           )}
         </div>
       </div>
@@ -368,7 +364,7 @@ function AnalysisDetailContent() {
         )}
       </section>
 
-      {/* AI Advisor */}
+      {(canRunAI || advisor) && (
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div>
           <h2 className="text-lg font-semibold text-slate-950">AI Advisor</h2>
@@ -392,9 +388,7 @@ function AnalysisDetailContent() {
               AI Advisor belum dijalankan
             </p>
             <p className="mt-1 text-sm text-slate-500">
-              {canRunAI
-                ? "Jalankan AI Advisor untuk meminta analisis terhadap dataset ini."
-                : "Hasil AI belum tersedia. Role Anda hanya dapat meninjau analisis yang sudah dijalankan."}
+              Jalankan AI Advisor untuk meminta analisis terhadap dataset ini.
             </p>
           </div>
         )}
@@ -521,6 +515,7 @@ function AnalysisDetailContent() {
           </div>
         )}
       </section>
+      )}
 
       {/* Campaign records */}
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

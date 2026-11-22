@@ -29,6 +29,8 @@ type Claims struct {
 	OrganizationID int64  `json:"org"`
 	Organization   string `json:"organization,omitempty"`
 	Role           string `json:"role,omitempty"`
+	PrincipalType  string `json:"principal_type,omitempty"`
+	ServiceID      int64  `json:"service_id,omitempty"`
 	Email          string `json:"email"`
 	Name           string `json:"name"`
 	Expiry         int64  `json:"exp"`
@@ -112,21 +114,6 @@ func RequireAuth(pool *pgxpool.Pool) gin.HandlerFunc {
 			return
 		}
 
-		claims, err := ParseToken(strings.TrimSpace(token))
-		if err != nil {
-			status := http.StatusUnauthorized
-			message := "Sesi tidak valid atau kedaluwarsa. Silakan masuk kembali."
-			if errors.Is(err, errAuthSecretUnavailable) {
-				status = http.StatusInternalServerError
-				message = "Konfigurasi autentikasi backend belum tersedia."
-			}
-			c.AbortWithStatusJSON(status, gin.H{
-				"success": false,
-				"message": message,
-			})
-			return
-		}
-
 		if pool == nil {
 			c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
 				"success": false,
@@ -137,39 +124,125 @@ func RequireAuth(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 3*time.Second)
 		defer cancel()
-		err = pool.QueryRow(ctx, `
-			SELECT o.name,
-			       CASE WHEN pa.user_id IS NOT NULL
-			            THEN 'platform_super_admin'
-			            ELSE m.role
-			       END
-			FROM organizations o
-			LEFT JOIN organization_memberships m
-				ON m.organization_id = o.id AND m.user_id = $1
-			LEFT JOIN platform_administrators pa ON pa.user_id = $1
-			WHERE o.id = $2
-			  AND (m.user_id IS NOT NULL OR pa.user_id IS NOT NULL)
-		`, claims.UserID, claims.OrganizationID).Scan(
-			&claims.Organization,
-			&claims.Role,
-		)
-		if errors.Is(err, pgx.ErrNoRows) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"success": false,
-				"message": "Akses ke organisasi ini sudah tidak tersedia.",
-			})
-			return
-		}
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
-				"success": false,
-				"message": "Keanggotaan organisasi tidak dapat diverifikasi.",
-			})
-			return
+		rawToken := strings.TrimSpace(token)
+		var claims Claims
+		if strings.HasPrefix(rawToken, "advsvc_") {
+			tokenHash := sha256.Sum256([]byte(rawToken))
+			err := pool.QueryRow(ctx, `
+				UPDATE service_identities si
+				SET last_used_at = NOW()
+				FROM organizations o
+				WHERE si.organization_id = o.id
+				  AND si.token_hash = $1
+				  AND si.is_active
+				  AND si.revoked_at IS NULL
+				RETURNING si.id, si.organization_id, o.name
+			`, tokenHash[:]).Scan(
+				&claims.ServiceID,
+				&claims.OrganizationID,
+				&claims.Organization,
+			)
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"message": "Kredensial service tidak valid atau telah dicabut.",
+				})
+				return
+			}
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
+					"success": false,
+					"message": "Identitas service tidak dapat diverifikasi.",
+				})
+				return
+			}
+			claims.Role = RoleAIServiceIdentity
+			claims.PrincipalType = "service"
+		} else {
+			var err error
+			claims, err = ParseToken(rawToken)
+			if err != nil {
+				status := http.StatusUnauthorized
+				message := "Sesi tidak valid atau kedaluwarsa. Silakan masuk kembali."
+				if errors.Is(err, errAuthSecretUnavailable) {
+					status = http.StatusInternalServerError
+					message = "Konfigurasi autentikasi backend belum tersedia."
+				}
+				c.AbortWithStatusJSON(status, gin.H{
+					"success": false,
+					"message": message,
+				})
+				return
+			}
+
+			var isActive bool
+			err = pool.QueryRow(ctx, `
+				SELECT u.is_active, o.name,
+				       CASE WHEN pa.user_id IS NOT NULL
+				            THEN 'platform_super_admin'
+				            ELSE m.role
+				       END
+				FROM users u
+				JOIN organizations o ON o.id = $2
+				LEFT JOIN organization_memberships m
+					ON m.organization_id = o.id AND m.user_id = u.id
+				LEFT JOIN platform_administrators pa ON pa.user_id = u.id
+				WHERE u.id = $1
+				  AND (m.user_id IS NOT NULL OR pa.user_id IS NOT NULL)
+			`, claims.UserID, claims.OrganizationID).Scan(
+				&isActive,
+				&claims.Organization,
+				&claims.Role,
+			)
+			if errors.Is(err, pgx.ErrNoRows) {
+				c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+					"success": false,
+					"message": "Akses ke organisasi ini sudah tidak tersedia.",
+				})
+				return
+			}
+			if err != nil {
+				c.AbortWithStatusJSON(http.StatusServiceUnavailable, gin.H{
+					"success": false,
+					"message": "Keanggotaan organisasi tidak dapat diverifikasi.",
+				})
+				return
+			}
+			if !isActive {
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+					"success": false,
+					"message": "Akun dinonaktifkan. Hubungi administrator platform.",
+				})
+				return
+			}
+			claims.PrincipalType = "user"
 		}
 
-		c.Set(userIDKey, claims.UserID)
+		if claims.UserID > 0 {
+			c.Set(userIDKey, claims.UserID)
+		}
 		c.Set("authenticated_user", claims)
+		c.Next()
+	}
+}
+
+func RequireHuman() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, ok := AuthenticatedUser(c)
+		if !ok {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+				"success": false,
+				"message": "Sesi pengguna tidak valid.",
+			})
+			return
+		}
+		if claims.PrincipalType == "service" {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
+				"success": false,
+				"message": "Operasi ini hanya tersedia untuk akun pengguna.",
+			})
+			return
+		}
 		c.Next()
 	}
 }

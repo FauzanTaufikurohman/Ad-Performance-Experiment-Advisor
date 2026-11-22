@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/mail"
+	"strconv"
 	"strings"
 	"time"
 
@@ -167,8 +168,8 @@ func Register(pool *pgxpool.Pool) gin.HandlerFunc {
 			INSERT INTO audit_logs (
 				organization_id, actor_user_id, action, resource_type, resource_id
 			)
-			VALUES ($1, $2, 'organization.created', 'organization', $1::TEXT)
-		`, user.OrganizationID, user.ID); err != nil {
+			VALUES ($1, $2, 'organization.created', 'organization', $3)
+		`, user.OrganizationID, user.ID, strconv.FormatInt(user.OrganizationID, 10)); err != nil {
 			log.Printf("ERROR: gagal mencatat audit pendaftaran organisasi: %v", err)
 			authServerError(c)
 			return
@@ -210,13 +211,15 @@ func Login(pool *pgxpool.Pool) gin.HandlerFunc {
 
 		var user authUser
 		var passwordHash string
+		var isActive bool
 		err := pool.QueryRow(ctx, `
-			SELECT id, name, email, password_hash
+			SELECT id, name, email, password_hash, is_active
 			FROM users
 			WHERE email = $1
-		`, email).Scan(&user.ID, &user.Name, &user.Email, &passwordHash)
+		`, email).Scan(&user.ID, &user.Name, &user.Email, &passwordHash, &isActive)
 		if errors.Is(err, pgx.ErrNoRows) ||
-			(err == nil && bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password)) != nil) {
+			(err == nil && (!isActive ||
+				bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(request.Password)) != nil)) {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"success": false,
 				"message": "Email atau password salah.",
@@ -246,6 +249,16 @@ func Login(pool *pgxpool.Pool) gin.HandlerFunc {
 		user.OrganizationID = memberships[0].ID
 		user.OrganizationName = memberships[0].Name
 		user.OrganizationRole = memberships[0].Role
+		if _, err := pool.Exec(ctx, `
+			INSERT INTO audit_logs (
+				organization_id, actor_user_id, action, resource_type, resource_id
+			)
+			VALUES ($1, $2, 'auth.login', 'user', $3)
+		`, user.OrganizationID, user.ID, strconv.FormatInt(user.ID, 10)); err != nil {
+			log.Printf("ERROR: gagal mencatat audit login pengguna %d: %v", user.ID, err)
+			authServerError(c)
+			return
+		}
 		respondWithSession(c, user, memberships)
 	}
 }

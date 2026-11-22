@@ -32,13 +32,14 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
   const { status } = useAuth();
   const [openMenuPath, setOpenMenuPath] = useState<string | null>(null);
   const mobileMenuOpen = openMenuPath === pathname;
-  const isAuthPage = pathname === "/auth";
+  const isPublicAccessPage =
+    pathname === "/auth" || pathname === "/invite/accept";
 
   useEffect(() => {
-    if (!isAuthPage && status === "unauthenticated") {
+    if (!isPublicAccessPage && status === "unauthenticated") {
       router.replace("/auth");
     }
-  }, [isAuthPage, router, status]);
+  }, [isPublicAccessPage, router, status]);
 
   useEffect(() => {
     if (!mobileMenuOpen) return;
@@ -51,7 +52,7 @@ function AppShellContent({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [mobileMenuOpen]);
 
-  if (isAuthPage) return children;
+  if (isPublicAccessPage) return children;
   if (status === "unauthenticated") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 text-sm text-slate-500">

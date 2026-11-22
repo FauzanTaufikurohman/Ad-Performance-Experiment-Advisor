@@ -5,14 +5,19 @@
 1. Copy `.env.example` to `.env` and configure `DATABASE_URL`.
 2. Set `AUTH_SECRET` to a unique random value of at least 32 characters. The
    existing `JWT_SECRET` variable is also accepted for local compatibility.
-3. Apply the SQL migrations in order from `migrations/` (`001` through `007`).
+3. From the `backend` directory, run `go run ./cmd/migrate`. The command
+   applies ordered SQL migrations and records their versions and checksums.
 4. Start the API with `go run .`.
+
+The migration command creates its ledger only in a schema with no existing
+tables. If a database already contains tables but has no ledger, the command
+stops without applying SQL. Do not mark old migrations as applied or run them
+against that database without a reviewed schema comparison and an explicit
+adoption procedure. The API does not run migrations at startup.
 
 The frontend provides email/password registration and login at `/auth`.
 Registration creates an organization and makes the registrant its
-`organization_owner`. Members must already have an Advisora account; the owner
-or an organization admin adds that account by email. Passwords are stored as
-bcrypt hashes.
+`organization_owner`. Passwords are stored as bcrypt hashes.
 
 Migration `002` assigns new uploads to their authenticated owner. Migration
 `005` adds organizations and default workspaces, backfills legacy users and
@@ -23,14 +28,39 @@ again after applying migration `005` to refresh old tokens.
 
 Organization roles are `organization_owner`, `organization_admin`,
 `cmo_executive`, `marketing_manager`, `campaign_specialist`, `data_analyst`,
-and `financial_controller`. Owner/Admin manage members; admins cannot assign
-the Owner role. Financial Controllers retain read access but cannot upload,
-run AI analysis, or evaluate experiments. `platform_super_admin` is separate
-from organization roles and must be provisioned through controlled database
-operations; registration and member-management endpoints cannot grant it.
-Provisioned platform admins can select any organization. Business Unit/Brand
-management, email invitations, and centralized platform configuration are not
-implemented in this phase.
+`financial_controller`, and `auditor`. Auditor is read-only. Owner/Admin
+manage members; admins cannot assign the Owner role. Financial Controllers and
+Auditors cannot upload, run AI analysis, or evaluate experiments.
+`platform_super_admin` is separate from organization roles and must be
+provisioned through controlled database operations; registration and
+member-management endpoints cannot grant it. Provisioned platform admins can
+select any organization.
+
+Owners, Admins, and Platform Super Admins can create organization invitations
+through `POST /api/organizations/invitations`. Invitations are bound to an
+email and organization, expire after seven days, and use one-time random tokens
+whose hashes are stored in PostgreSQL. There is no email transport configured:
+the API returns the link once to the authenticated inviter for delivery through
+a trusted channel. The recipient accepts at `POST /api/auth/invitations/accept`
+and must provide the invited account password or set a password for a new
+account. Invitations cannot assign Owner or Platform Super Admin. The older
+member-add endpoint remains available for compatibility.
+
+Only a Platform Super Admin can change a user's global active state through
+`POST /api/platform/users/:id/status`. The API refuses self-disable and
+disabling the last active Platform Super Admin. Login and every protected
+request check this state, so disabling an account blocks already-issued
+sessions.
+
+Organization managers can create service identities through
+`POST /api/organizations/service-identities`. Each identity is limited to the
+active organization, has read-only access to tenant data endpoints, and uses a
+separate random API key rather than a user session. The API key is returned
+only once; PostgreSQL stores its SHA-256 hash. Revoke a key with
+`POST /api/organizations/service-identities/:id/revoke`. Service identities
+cannot switch organizations, manage users, upload data, or invoke write
+operations. Business Unit/Brand management and centralized platform
+configuration are not implemented in this phase.
 
 ## Database and server capacity
 

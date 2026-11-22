@@ -2,6 +2,11 @@
 
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
+import {
+  canManageOrganizationMembers,
+  canWriteCampaignData,
+} from "@/lib/advisor";
+import ThemeToggle from "@/components/theme/theme-toggle";
 
 const roleLabels: Record<string, string> = {
   platform_super_admin: "Platform Super Admin",
@@ -12,6 +17,7 @@ const roleLabels: Record<string, string> = {
   campaign_specialist: "Campaign Specialist",
   data_analyst: "Data Analyst",
   financial_controller: "Financial Controller",
+  auditor: "Auditor",
 };
 
 const pageTitles: Record<string, { title: string; description: string }> = {
@@ -64,9 +70,23 @@ export default function AppHeader({
 }: AppHeaderProps) {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
+  const canWrite = canWriteCampaignData(user?.organization_role);
+  const canManageMembers = canManageOrganizationMembers(
+    user?.organization_role,
+  );
 
   const page =
-    pageTitles[pathname] ??
+    (pathname === "/experiments" && !canWrite
+      ? {
+          title: "Experiment history",
+          description: "Tinjau hasil evaluasi eksperimen yang tersimpan.",
+        }
+      : pathname === "/organization" && !canManageMembers
+        ? {
+            title: "Organization",
+            description: "Lihat informasi organisasi dan anggota.",
+          }
+        : pageTitles[pathname]) ??
     (pathname.startsWith("/analysis/")
       ? {
           title: "Analysis detail",
@@ -93,6 +113,7 @@ export default function AppHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+        <ThemeToggle />
         <button
           type="button"
           aria-controls="primary-navigation"

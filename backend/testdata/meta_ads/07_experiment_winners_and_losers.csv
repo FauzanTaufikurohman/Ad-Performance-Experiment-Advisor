@@ -1,0 +1,121 @@
+﻿date,campaign,impressions,clicks,spend,conversions,conversion_value
+2026-09-02,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,7702,198,315.90,12,929.99
+2026-09-08,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,12540,213,237.57,7,1470.28
+2026-09-13,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,12649,187,138.98,9,278.90
+2026-09-15,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,4784,142,172.28,10,849.87
+2026-09-18,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,12092,357,294.66,8,1147.25
+2026-09-25,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,15739,516,1439.36,20,4908.57
+2026-09-30,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,14388,163,136.11,10,2317.85
+2026-10-01,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,3208,87,47.27,4,994.26
+2026-10-16,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,8251,247,247.95,2,238.41
+2026-10-17,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,10922,336,783.83,24,1509.17
+2026-10-20,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,15629,477,1081.97,11,531.92
+2026-10-21,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,5218,110,178.48,2,245.07
+2026-10-29,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,17200,389,464.21,15,2967.79
+2026-11-03,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,14970,475,640.30,16,3556.73
+2026-11-13,Sales | Wilson-Mcclure | North Daniellefurt | Prospecting | Control,2765,86,172.62,0,0.00
+2026-09-02,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,4837,17,40.52,0,0.00
+2026-09-08,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,6785,93,85.64,3,616.33
+2026-09-13,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,7122,68,23.81,3,606.36
+2026-09-15,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,15359,61,162.52,3,175.29
+2026-09-18,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,8930,37,15.42,1,93.69
+2026-09-25,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,9767,74,192.51,1,205.22
+2026-09-30,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,14986,242,393.66,6,781.16
+2026-10-01,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,11612,144,398.55,3,79.67
+2026-10-16,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,10417,93,41.42,4,411.52
+2026-10-17,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,16293,207,88.74,2,295.71
+2026-10-20,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,17901,256,380.78,2,239.47
+2026-10-21,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,10010,110,165.90,5,233.63
+2026-10-29,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,4342,24,42.73,1,77.03
+2026-11-03,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,12127,174,354.63,7,378.57
+2026-11-13,Sales | Fitzpatrick-Shields | East Julieville | Retargeting | Variant A,6657,85,206.30,4,849.26
+2026-09-02,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",11404,116,36.30,1,158.09
+2026-09-08,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",8992,84,142.27,4,374.20
+2026-09-13,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",16719,185,326.52,10,2012.61
+2026-09-15,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",13051,85,236.87,3,166.55
+2026-09-18,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",4780,105,108.03,5,235.25
+2026-09-25,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",15744,161,310.26,8,355.78
+2026-09-30,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",7436,31,29.08,2,179.34
+2026-10-01,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",4787,53,108.64,1,246.85
+2026-10-16,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",6482,120,329.13,9,647.17
+2026-10-17,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",10546,159,206.95,11,2787.56
+2026-10-20,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",15495,113,73.65,5,1002.99
+2026-10-21,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",5753,150,48.88,1,59.80
+2026-10-29,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",7027,30,28.85,2,363.38
+2026-11-03,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",14371,201,352.18,9,2225.86
+2026-11-13,"Sales | Mercado, Lee and Adams | New Davidchester | Lookalike | Variant B",2703,39,25.70,0,0.00
+2026-09-02,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,17074,260,221.78,77,9605.68
+2026-09-08,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,9895,246,62.09,93,11357.86
+2026-09-13,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,4244,152,135.06,62,13353.99
+2026-09-15,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,7870,108,182.13,35,895.71
+2026-09-18,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,12038,302,224.46,65,10201.98
+2026-09-25,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,16309,165,86.33,73,18841.96
+2026-09-30,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,12362,304,828.60,86,11515.46
+2026-10-01,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,15294,284,139.23,36,2998.61
+2026-10-16,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,15338,139,107.60,33,3305.59
+2026-10-17,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,8840,190,360.12,25,6191.78
+2026-10-20,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,5957,124,240.01,49,5789.61
+2026-10-21,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,9657,66,39.29,9,1647.90
+2026-10-29,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,15794,213,541.47,66,1744.54
+2026-11-03,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,14594,357,478.44,108,4318.14
+2026-11-13,Sales | Fisher-Morgan | Lake Martinbury | Broad | Variant C,9981,291,84.37,97,17909.15
+2026-09-02,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,3493,33,28.11,1,188.68
+2026-09-08,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,3325,25,21.38,0,0.00
+2026-09-13,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,11753,81,144.20,2,358.66
+2026-09-15,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,17767,139,189.80,5,1263.95
+2026-09-18,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,15338,139,330.19,5,524.34
+2026-09-25,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,2803,16,41.44,0,0.00
+2026-09-30,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,10525,119,328.86,0,0.00
+2026-10-01,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,12221,149,145.69,2,472.63
+2026-10-16,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,6566,51,109.86,0,0.00
+2026-10-17,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,4450,50,32.83,0,0.00
+2026-10-20,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,4993,68,137.44,0,0.00
+2026-10-21,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,5885,18,44.29,0,0.00
+2026-10-29,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,2599,17,30.38,0,0.00
+2026-11-03,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,11324,128,217.11,4,397.31
+2026-11-13,Sales | Coleman and Sons | Port Nicholas | Catalog | Variant D,14235,50,23.96,0,0.00
+2026-09-02,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,6944,53,114.33,2,65.54
+2026-09-08,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,9596,49,34.87,3,339.64
+2026-09-13,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,9555,217,425.90,8,893.65
+2026-09-15,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,3698,82,213.44,4,387.34
+2026-09-18,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,7904,119,263.79,6,216.73
+2026-09-25,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,14295,138,266.60,4,863.04
+2026-09-30,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,17510,307,267.98,21,2534.94
+2026-10-01,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,10620,138,336.31,3,453.41
+2026-10-16,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,16843,126,309.93,8,1690.46
+2026-10-17,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,5778,118,178.03,4,605.51
+2026-10-20,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,10407,138,211.23,4,565.43
+2026-10-21,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,4389,93,118.71,4,497.19
+2026-10-29,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,10115,121,94.98,3,355.81
+2026-11-03,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,2187,32,63.80,1,121.37
+2026-11-13,Sales | Santana-Collins | Lake Jeremiah | Video views | Variant E,10963,142,87.41,4,320.55
+2026-09-02,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",17165,277,674.41,70,15764.89
+2026-09-08,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",5219,43,99.84,8,1734.33
+2026-09-13,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",2314,40,50.05,12,1030.86
+2026-09-15,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",13287,341,89.91,40,6370.92
+2026-09-18,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",9662,162,373.04,32,6393.69
+2026-09-25,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",7576,93,125.27,15,2722.11
+2026-09-30,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",2618,54,33.52,5,577.94
+2026-10-01,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",13320,204,254.95,32,3015.94
+2026-10-16,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",4228,58,132.70,13,1375.77
+2026-10-17,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",14069,413,885.17,60,2899.62
+2026-10-20,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",8701,45,87.34,2,116.77
+2026-10-21,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",17485,437,646.45,142,17455.07
+2026-10-29,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",10821,86,125.92,7,1510.44
+2026-11-03,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",14535,424,545.02,75,11731.62
+2026-11-13,"Sales | Adams, Rasmussen and Kennedy | Shawnaborough | Website visitors | Variant F",2991,17,13.83,4,796.94
+2026-09-02,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,2108,24,24.27,1,139.13
+2026-09-08,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,14324,87,85.53,3,263.04
+2026-09-13,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,3994,47,96.62,0,0.00
+2026-09-15,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,14026,184,359.83,10,2220.89
+2026-09-18,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,10290,76,212.20,3,721.69
+2026-09-25,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,10795,89,30.52,4,613.11
+2026-09-30,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,8178,141,195.83,7,1787.24
+2026-10-01,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,2406,27,17.53,1,186.48
+2026-10-16,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,11557,141,266.05,8,1689.81
+2026-10-17,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,6198,21,33.86,1,51.00
+2026-10-20,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,2703,37,16.53,1,177.24
+2026-10-21,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,10202,154,182.62,3,539.90
+2026-10-29,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,10773,150,211.61,3,500.19
+2026-11-03,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,15748,225,341.68,15,2631.20
+2026-11-13,Sales | Pittman and Sons | North Christopherville | Advantage+ | Variant G,14317,286,286.74,11,798.23

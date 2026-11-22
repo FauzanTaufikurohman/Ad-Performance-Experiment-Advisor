@@ -57,8 +57,8 @@ func TestParseAndValidateCSV(t *testing.T) {
 			wantErr: true,
 		},
 		{
-    name: "NaN spend",
-    csv: `date,campaign,impressions,clicks,spend,conversions,conversion_value
+			name: "NaN spend",
+			csv: `date,campaign,impressions,clicks,spend,conversions,conversion_value
 		2026-10-01,Campaign A,1000,50,NaN,5,300`,
 			wantErr: true,
 		},
@@ -87,8 +87,8 @@ func TestParseAndValidateCSV(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "empty data",
-			csv: `date,campaign,impressions,clicks,spend,conversions,conversion_value`,
+			name:    "empty data",
+			csv:     `date,campaign,impressions,clicks,spend,conversions,conversion_value`,
 			wantErr: true,
 		},
 	}

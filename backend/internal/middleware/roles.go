@@ -14,6 +14,8 @@ const (
 	RoleCampaignSpecialist  = "campaign_specialist"
 	RoleDataAnalyst         = "data_analyst"
 	RoleFinancialController = "financial_controller"
+	RoleAuditor             = "auditor"
+	RoleAIServiceIdentity   = "ai_service_identity"
 	RolePlatformSuperAdmin  = "platform_super_admin"
 )
 
@@ -25,6 +27,7 @@ var organizationRoles = map[string]struct{}{
 	RoleCampaignSpecialist:  {},
 	RoleDataAnalyst:         {},
 	RoleFinancialController: {},
+	RoleAuditor:             {},
 }
 
 func IsOrganizationRole(role string) bool {

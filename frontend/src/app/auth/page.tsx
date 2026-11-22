@@ -8,6 +8,7 @@ import {
   type OrganizationMembership,
 } from "@/lib/advisor";
 import { useAuth } from "@/components/auth/auth-provider";
+import ThemeToggle from "@/components/theme/theme-toggle";
 
 type AuthResponse = {
   success?: boolean;
@@ -116,18 +117,21 @@ export default function AuthPage() {
   return (
     <main className="auth-page flex min-h-screen items-center justify-center bg-slate-50 px-4 py-8 sm:px-6">
       <div className="w-full max-w-5xl">
-        <div className="mb-6 flex items-center justify-center gap-3 sm:justify-start">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-700 text-base font-bold text-white shadow-sm shadow-blue-900/15">
-            A
+        <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-700 text-base font-bold text-white shadow-sm shadow-blue-900/15">
+              A
+            </div>
+            <div>
+              <p className="text-sm font-semibold tracking-tight text-slate-900">
+                Advisora
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Ad performance workspace
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-semibold tracking-tight text-slate-900">
-              Advisora
-            </p>
-            <p className="text-[11px] text-slate-500">
-              Ad performance workspace
-            </p>
-          </div>
+          <ThemeToggle />
         </div>
 
         <section
@@ -336,10 +340,6 @@ export default function AuthPage() {
           </div>
         </section>
 
-        <p className="mt-5 text-center text-xs leading-5 text-slate-500">
-          Tanpa role — setiap akun memiliki fitur yang sama dan data yang
-          terpisah.
-        </p>
       </div>
     </main>
   );

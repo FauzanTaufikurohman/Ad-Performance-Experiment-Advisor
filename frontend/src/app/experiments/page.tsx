@@ -365,10 +365,12 @@ function ExperimentsWorkspace() {
       <header>
         <p className="text-sm font-medium text-slate-600">Evaluate / Experiments</p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-          Experiment lab
+          {canEvaluate ? "Experiment lab" : "Riwayat eksperimen"}
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
-          Evaluasi varian kampanye dengan posterior Bayesian atau minta hipotesis untuk ditinjau. Data historis saja tidak membuktikan bahwa kampanye dijalankan secara acak.
+          {canEvaluate
+            ? "Evaluasi varian kampanye dengan posterior Bayesian atau minta hipotesis untuk ditinjau. Data historis saja tidak membuktikan bahwa kampanye dijalankan secara acak."
+            : "Tinjau hasil evaluasi varian kampanye yang tersimpan pada organisasi aktif."}
         </p>
       </header>
 
@@ -379,7 +381,7 @@ function ExperimentsWorkspace() {
               Riwayat eksperimen organisasi
             </h3>
             <p className="mt-1 text-sm leading-6 text-slate-700">
-              Hasil evaluasi tersedia untuk anggota organisasi dengan akses baca.
+              Hasil evaluasi tersimpan pada organisasi aktif.
             </p>
             {historyTotal > 0 && (
               <p className="mt-1 text-sm text-slate-700">
@@ -430,9 +432,7 @@ function ExperimentsWorkspace() {
         {!loadingHistory && !historyError && history.length === 0 && (
           <p className="mt-4 text-sm leading-6 text-slate-700">
             Belum ada hasil evaluasi tersimpan di organisasi ini.
-            {canEvaluate
-              ? " Jalankan evaluasi Bayesian untuk menambahkan hasil."
-              : " Minta anggota dengan izin evaluasi untuk menjalankan eksperimen."}
+            {canEvaluate && " Jalankan evaluasi Bayesian untuk menambahkan hasil."}
           </p>
         )}
 

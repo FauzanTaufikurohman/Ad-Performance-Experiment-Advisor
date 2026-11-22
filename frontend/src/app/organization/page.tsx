@@ -4,6 +4,9 @@ import { useEffect, useState, type FormEvent } from "react";
 import {
   API,
   apiFetch,
+  canAssignOrganizationOwner,
+  canManageOrganizationMembers,
+  canManagePlatformUsers,
 } from "@/lib/advisor";
 import { useAuth } from "@/components/auth/auth-provider";
 
@@ -19,7 +22,16 @@ type OrganizationMember = {
   name: string;
   email: string;
   role: string;
+  is_active: boolean;
   joined_at: string;
+};
+
+type ServiceIdentity = {
+  id: number;
+  name: string;
+  is_active: boolean;
+  last_used_at: string | null;
+  created_at: string;
 };
 
 type APIResponse<T> = {
@@ -28,6 +40,9 @@ type APIResponse<T> = {
   organization?: T;
   role?: string;
   data?: T;
+  token?: string;
+  expires_at?: string;
+  api_key?: string;
 };
 
 const roleLabels: Record<string, string> = {
@@ -39,6 +54,7 @@ const roleLabels: Record<string, string> = {
   campaign_specialist: "Campaign Specialist",
   data_analyst: "Data Analyst",
   financial_controller: "Financial Controller",
+  auditor: "Auditor",
 };
 
 const organizationRoles = [
@@ -48,6 +64,7 @@ const organizationRoles = [
   { value: "campaign_specialist", label: "Campaign Specialist" },
   { value: "data_analyst", label: "Data Analyst" },
   { value: "financial_controller", label: "Financial Controller" },
+  { value: "auditor", label: "Auditor" },
 ];
 
 function formatDate(value: string) {
@@ -60,39 +77,65 @@ export default function OrganizationPage() {
   const { user, organizations, switchOrganization } = useAuth();
   const [organization, setOrganization] = useState<OrganizationData | null>(null);
   const [members, setMembers] = useState<OrganizationMember[]>([]);
+  const [serviceIdentities, setServiceIdentities] = useState<ServiceIdentity[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("data_analyst");
+  const [serviceName, setServiceName] = useState("");
+  const [invitationLink, setInvitationLink] = useState("");
+  const [newServiceKey, setNewServiceKey] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [serviceSubmitting, setServiceSubmitting] = useState(false);
+  const [changingUserID, setChangingUserID] = useState<number | null>(null);
+  const [revokingServiceID, setRevokingServiceID] = useState<number | null>(null);
   const [switching, setSwitching] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [retry, setRetry] = useState(0);
 
-  const canManageMembers =
-    user?.organization_role === "platform_super_admin" ||
-    user?.organization_role === "organization_owner" ||
-    user?.organization_role === "organization_admin";
-  const assignableRoles =
-    user?.organization_role === "platform_super_admin" ||
-    user?.organization_role === "organization_owner"
-      ? [
-          { value: "organization_owner", label: "Organization Owner" },
-          ...organizationRoles,
-        ]
-      : organizationRoles;
+  const canManageMembers = canManageOrganizationMembers(
+    user?.organization_role,
+  );
+  const isPlatformAdmin = canManagePlatformUsers(user?.organization_role);
+  const assignableRoles = canAssignOrganizationOwner(user?.organization_role)
+    ? [
+        { value: "organization_owner", label: "Organization Owner" },
+        ...organizationRoles,
+      ]
+    : organizationRoles;
 
   useEffect(() => {
     let active = true;
     async function loadOrganization() {
       try {
-        const [organizationResponse, membersResponse] = await Promise.all([
+        const [
+          organizationResponse,
+          membersResponse,
+          serviceIdentitiesResponse,
+        ] = await Promise.all([
           apiFetch(`${API}/api/organizations/current`, { cache: "no-store" }),
           apiFetch(`${API}/api/organizations/members`, { cache: "no-store" }),
+          canManageMembers
+            ? apiFetch(`${API}/api/organizations/service-identities`, {
+                cache: "no-store",
+              })
+            : Promise.resolve(null),
         ]);
-        const [organizationPayload, membersPayload] = await Promise.all([
+        const [
+          organizationPayload,
+          membersPayload,
+          serviceIdentitiesPayload,
+        ] = await Promise.all([
           organizationResponse.json() as Promise<APIResponse<OrganizationData>>,
           membersResponse.json() as Promise<APIResponse<OrganizationMember[]>>,
+          serviceIdentitiesResponse
+            ? (serviceIdentitiesResponse.json() as Promise<
+                APIResponse<ServiceIdentity[]>
+              >)
+            : Promise.resolve<APIResponse<ServiceIdentity[]>>({
+              success: true,
+              data: [],
+            }),
         ]);
 
         if (
@@ -113,10 +156,21 @@ export default function OrganizationPage() {
             membersPayload.message || "Anggota organisasi gagal dimuat.",
           );
         }
+        if (canManageMembers && (
+          !serviceIdentitiesResponse?.ok ||
+          !serviceIdentitiesPayload.success ||
+          !Array.isArray(serviceIdentitiesPayload.data)
+        )) {
+          throw new Error(
+            serviceIdentitiesPayload.message ||
+              "Service identity organisasi gagal dimuat.",
+          );
+        }
 
         if (!active) return;
         setOrganization(organizationPayload.organization);
         setMembers(membersPayload.data);
+        setServiceIdentities(serviceIdentitiesPayload.data ?? []);
         setError("");
       } catch (cause) {
         if (!active) return;
@@ -134,29 +188,31 @@ export default function OrganizationPage() {
     return () => {
       active = false;
     };
-  }, [retry]);
+  }, [canManageMembers, retry]);
 
-  async function addMember(event: FormEvent<HTMLFormElement>) {
+  async function createInvitation(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError("");
     setSuccess("");
+    setInvitationLink("");
 
     try {
-      const response = await apiFetch(`${API}/api/organizations/members`, {
+      const response = await apiFetch(`${API}/api/organizations/invitations`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), role }),
       });
       const payload = (await response.json()) as APIResponse<never>;
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.message || "Anggota gagal ditambahkan.");
+      if (!response.ok || !payload.success || !payload.token) {
+        throw new Error(payload.message || "Undangan gagal dibuat.");
       }
 
+      const invitationURL = new URL("/invite/accept", window.location.origin);
+      invitationURL.searchParams.set("token", payload.token);
+      setInvitationLink(invitationURL.toString());
       setEmail("");
-      setSuccess(payload.message || "Anggota berhasil ditambahkan.");
-      setLoading(true);
-      setRetry((value) => value + 1);
+      setSuccess(payload.message || "Undangan berhasil dibuat.");
     } catch (cause) {
       setError(
         cause instanceof Error
@@ -165,6 +221,113 @@ export default function OrganizationPage() {
       );
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function changeUserStatus(member: OrganizationMember) {
+    const nextIsActive = !member.is_active;
+    const action = nextIsActive ? "mengaktifkan" : "menonaktifkan";
+    if (!window.confirm(`Anda akan ${action} akun ${member.email} di seluruh platform. Lanjutkan?`)) {
+      return;
+    }
+
+    setChangingUserID(member.id);
+    setError("");
+    setSuccess("");
+    try {
+      const response = await apiFetch(
+        `${API}/api/platform/users/${member.id}/status`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_active: nextIsActive }),
+        },
+      );
+      const payload = (await response.json()) as APIResponse<never>;
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.message || "Status akun gagal diperbarui.");
+      }
+      setSuccess(payload.message || "Status akun diperbarui.");
+      setLoading(true);
+      setRetry((value) => value + 1);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Status akun gagal diperbarui.",
+      );
+    } finally {
+      setChangingUserID(null);
+    }
+  }
+
+  async function createServiceIdentity(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setServiceSubmitting(true);
+    setError("");
+    setSuccess("");
+    setNewServiceKey("");
+    try {
+      const response = await apiFetch(
+        `${API}/api/organizations/service-identities`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: serviceName.trim() }),
+        },
+      );
+      const payload =
+        (await response.json()) as APIResponse<ServiceIdentity>;
+      if (!response.ok || !payload.success || !payload.api_key) {
+        throw new Error(
+          payload.message || "Service identity gagal dibuat.",
+        );
+      }
+      setNewServiceKey(payload.api_key);
+      setServiceName("");
+      setSuccess(payload.message || "Service identity berhasil dibuat.");
+      setLoading(true);
+      setRetry((value) => value + 1);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Service identity gagal dibuat.",
+      );
+    } finally {
+      setServiceSubmitting(false);
+    }
+  }
+
+  async function revokeServiceIdentity(identity: ServiceIdentity) {
+    if (!window.confirm(`Cabut akses service identity "${identity.name}"?`)) {
+      return;
+    }
+    setRevokingServiceID(identity.id);
+    setError("");
+    setSuccess("");
+    try {
+      const response = await apiFetch(
+        `${API}/api/organizations/service-identities/${identity.id}/revoke`,
+        { method: "POST" },
+      );
+      const payload = (await response.json()) as APIResponse<never>;
+      if (!response.ok || !payload.success) {
+        throw new Error(
+          payload.message || "Service identity gagal dicabut.",
+        );
+      }
+      setSuccess(payload.message || "Service identity dicabut.");
+      setLoading(true);
+      setRetry((value) => value + 1);
+    } catch (cause) {
+      setError(
+        cause instanceof Error
+          ? cause.message
+          : "Service identity gagal dicabut.",
+      );
+    } finally {
+      setRevokingServiceID(null);
     }
   }
 
@@ -190,12 +353,16 @@ export default function OrganizationPage() {
   return (
     <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:px-7 sm:py-8">
       <header>
-        <p className="text-sm font-medium text-slate-600">Manage / Organization</p>
+        <p className="text-sm font-medium text-slate-600">
+          {canManageMembers ? "Manage / Organization" : "Organization"}
+        </p>
         <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-          Organisasi dan anggota
+          {canManageMembers ? "Organisasi dan anggota" : "Informasi organisasi"}
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
-          Kelola konteks organisasi dan lihat akses anggota pada workspace aktif.
+          {canManageMembers
+            ? "Kelola konteks organisasi dan lihat akses anggota pada workspace aktif."
+            : "Lihat konteks organisasi aktif dan daftar anggotanya."}
         </p>
       </header>
 
@@ -320,7 +487,7 @@ export default function OrganizationPage() {
                   {members.map((member) => (
                     <article
                       key={member.id}
-                      className="grid gap-2 py-4 sm:grid-cols-[minmax(0,1fr)_12rem]"
+                      className="grid gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_14rem]"
                     >
                       <div className="min-w-0">
                         <h4 className="break-words font-semibold text-slate-950">
@@ -331,9 +498,30 @@ export default function OrganizationPage() {
                           Bergabung {formatDate(member.joined_at)}
                         </p>
                       </div>
-                      <p className="text-sm font-medium text-slate-800 sm:text-right">
-                        {roleLabels[member.role] ?? member.role}
-                      </p>
+                      <div className="flex flex-col gap-2 sm:items-end">
+                        <p className="text-sm font-medium text-slate-800">
+                          {roleLabels[member.role] ?? member.role}
+                        </p>
+                        <p className="text-xs text-slate-700">
+                          {member.is_active
+                            ? "Akun aktif"
+                            : "Akun dinonaktifkan"}
+                        </p>
+                        {isPlatformAdmin && member.id !== user?.id && (
+                          <button
+                            type="button"
+                            onClick={() => void changeUserStatus(member)}
+                            disabled={changingUserID === member.id}
+                            className="min-h-11 rounded-md border border-slate-400 px-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                          >
+                            {changingUserID === member.id
+                              ? "Menyimpan..."
+                              : member.is_active
+                                ? "Nonaktifkan akun"
+                                : "Aktifkan akun"}
+                          </button>
+                        )}
+                      </div>
                     </article>
                   ))}
                 </div>
@@ -342,19 +530,20 @@ export default function OrganizationPage() {
 
             {canManageMembers && (
               <form
-                onSubmit={addMember}
+                onSubmit={createInvitation}
                 className="h-fit border-t border-slate-300 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
               >
                 <h3 className="text-lg font-semibold text-slate-950">
-                  Tambahkan anggota
+                  Undang anggota
                 </h3>
                 <p className="mt-2 text-sm leading-6 text-slate-700">
-                  Anggota harus sudah memiliki akun Advisora. Role Super Admin
-                  dikelola terpisah dan tidak dapat diberikan dari organisasi.
+                  Buat link sekali pakai untuk email dan role yang dipilih.
+                  Kirim link lewat kanal tepercaya. Role Platform Super Admin
+                  tidak dapat diberikan dari organisasi.
                 </p>
                 <label className="mt-4 block">
                   <span className="mb-1 block text-sm font-medium text-slate-900">
-                    Email akun
+                    Email undangan
                   </span>
                   <input
                     type="email"
@@ -387,11 +576,134 @@ export default function OrganizationPage() {
                   disabled={submitting}
                   className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-blue-800 px-4 text-sm font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
                 >
-                  {submitting ? "Menambahkan..." : "Tambahkan anggota"}
+                  {submitting ? "Membuat undangan..." : "Buat undangan"}
                 </button>
+                {invitationLink && (
+                  <div className="mt-4 space-y-2">
+                    <label className="block">
+                      <span className="mb-1 block text-sm font-medium text-slate-900">
+                        Link undangan, hanya ditampilkan setelah dibuat
+                      </span>
+                      <textarea
+                        readOnly
+                        rows={3}
+                        value={invitationLink}
+                        className="w-full break-all rounded-md border border-slate-400 bg-white p-3 text-xs text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                      />
+                    </label>
+                    <a
+                      href={invitationLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex min-h-11 items-center font-semibold text-blue-800 underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                    >
+                      Buka link undangan
+                    </a>
+                  </div>
+                )}
               </form>
             )}
           </section>
+
+          {canManageMembers && (
+            <section className="grid gap-8 border-t border-slate-300 pt-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+              <div className="min-w-0">
+                <h3 className="text-xl font-semibold text-slate-950">
+                  Identitas service
+                </h3>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
+                  Kunci berlaku hanya untuk organisasi aktif dan hanya dapat
+                  membaca data. Simpan kunci saat dibuat. Sistem tidak dapat
+                  menampilkannya kembali.
+                </p>
+                {serviceIdentities.length === 0 ? (
+                  <p className="mt-4 border-y border-slate-300 py-5 text-sm text-slate-700">
+                    Belum ada identitas service pada organisasi ini.
+                  </p>
+                ) : (
+                  <ul className="mt-4 divide-y divide-slate-300 border-y border-slate-300">
+                    {serviceIdentities.map((identity) => (
+                      <li
+                        key={identity.id}
+                        className="flex flex-wrap items-start justify-between gap-3 py-4"
+                      >
+                        <div className="min-w-0">
+                          <h4 className="break-words font-semibold text-slate-950">
+                            {identity.name}
+                          </h4>
+                          <p className="mt-1 text-sm text-slate-700">
+                            {identity.is_active ? "Aktif" : "Dicabut"}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-600">
+                            {identity.last_used_at
+                              ? `Terakhir digunakan ${formatDate(identity.last_used_at)}`
+                              : "Belum digunakan"}
+                          </p>
+                        </div>
+                        {identity.is_active && (
+                          <button
+                            type="button"
+                            onClick={() => void revokeServiceIdentity(identity)}
+                            disabled={revokingServiceID === identity.id}
+                            className="min-h-11 rounded-md border border-slate-400 px-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                          >
+                            {revokingServiceID === identity.id
+                              ? "Mencabut..."
+                              : "Cabut akses"}
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <form
+                onSubmit={createServiceIdentity}
+                className="h-fit border-t border-slate-300 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0"
+              >
+                <h4 className="text-lg font-semibold text-slate-950">
+                  Buat identitas AI
+                </h4>
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  Identitas ini terpisah dari akun pengguna dan tidak dapat
+                  mengunggah atau mengubah data.
+                </p>
+                <label className="mt-4 block">
+                  <span className="mb-1 block text-sm font-medium text-slate-900">
+                    Nama service
+                  </span>
+                  <input
+                    required
+                    maxLength={100}
+                    value={serviceName}
+                    onChange={(event) => setServiceName(event.target.value)}
+                    className="min-h-11 w-full rounded-md border border-slate-400 bg-white px-3 text-sm text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                  />
+                </label>
+                <button
+                  type="submit"
+                  disabled={serviceSubmitting}
+                  className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-blue-800 px-4 text-sm font-semibold text-white hover:bg-blue-900 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
+                >
+                  {serviceSubmitting ? "Membuat identitas..." : "Buat identitas AI"}
+                </button>
+                {newServiceKey && (
+                  <label className="mt-4 block">
+                    <span className="mb-1 block text-sm font-medium text-slate-900">
+                      API key, simpan sekarang
+                    </span>
+                    <textarea
+                      readOnly
+                      rows={3}
+                      value={newServiceKey}
+                      className="w-full break-all rounded-md border border-slate-400 bg-white p-3 font-mono text-xs text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                    />
+                  </label>
+                )}
+              </form>
+            </section>
+          )}
         </>
       ) : (
         !error && (

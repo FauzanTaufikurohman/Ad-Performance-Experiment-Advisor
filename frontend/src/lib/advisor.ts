@@ -30,6 +30,26 @@ export function canWriteCampaignData(role: string | null | undefined) {
   return role != null && campaignWriteRoles.has(role);
 }
 
+export function canManageOrganizationMembers(
+  role: string | null | undefined,
+) {
+  return (
+    role === "platform_super_admin" ||
+    role === "organization_owner" ||
+    role === "organization_admin"
+  );
+}
+
+export function canAssignOrganizationOwner(
+  role: string | null | undefined,
+) {
+  return role === "platform_super_admin" || role === "organization_owner";
+}
+
+export function canManagePlatformUsers(role: string | null | undefined) {
+  return role === "platform_super_admin";
+}
+
 export type BayesianExperimentResult = {
   experiment_id: string;
   metric: string;

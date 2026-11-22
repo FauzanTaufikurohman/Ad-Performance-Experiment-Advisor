@@ -6,10 +6,13 @@ import Link from "next/link";
 import {
   API,
   apiFetch,
+  canWriteCampaignData,
   formatNumber,
   type HistoryItem,
 } from "@/lib/advisor";
 import UploadActionLink from "@/components/permissions/upload-action-link";
+import { useAuth } from "@/components/auth/auth-provider";
+import { getRoleExperience } from "@/lib/role-experience";
 
 type UploadResponse = {
   success: boolean;
@@ -56,6 +59,9 @@ function formatDate(value: string) {
 }
 
 export default function OverviewPage() {
+  const { user } = useAuth();
+  const experience = getRoleExperience(user);
+  const canWrite = canWriteCampaignData(user?.organization_role);
   const [uploads, setUploads] = useState<HistoryItem[]>([]);
   const [totalUploads, setTotalUploads] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -133,14 +139,13 @@ export default function OverviewPage() {
         <section className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
             <p className="text-sm font-medium text-slate-600">
-              Ruang kerja kampanye
+              {experience.label} · {user?.organization_name}
             </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
-              Ringkasan data
+              {experience.focusHeading}
             </h2>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-700">
-              Tinjau dataset yang tersimpan, lalu pilih alur untuk memeriksa
-              kampanye atau mengevaluasi varian.
+              {experience.focusDescription}
             </p>
           </div>
 
@@ -318,7 +323,9 @@ export default function OverviewPage() {
                   Belum ada dataset
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Unggah file CSV untuk mulai menganalisis performa iklan.
+                  {canWrite
+                    ? "Unggah file CSV untuk mulai menganalisis performa iklan."
+                    : "Belum ada dataset pada organisasi ini."}
                 </p>
                 <UploadActionLink
                   href="/uploads/new"
@@ -336,69 +343,28 @@ export default function OverviewPage() {
 
           <div className="space-y-4">
             <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm shadow-slate-950/[0.02] sm:p-6">
-              <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-950">
-                Mulai dari data kampanye
+              <h2 className="text-base font-semibold text-slate-950">
+                Alur yang disarankan
               </h2>
-              <p className="mt-2 text-sm leading-6 text-slate-600">
-                Unggah CSV untuk meninjau metrik, temuan, dan kemungkinan
-                eksperimen berdasarkan data yang tersimpan.
-              </p>
-              <UploadActionLink
-                href="/uploads/new"
-                className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-md bg-blue-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-800"
-              >
-                Unggah data kampanye
-              </UploadActionLink>
-            </article>
-
-            <nav aria-labelledby="workflow-title" className="border-t border-slate-300 pt-5">
-              <h2 id="workflow-title" className="font-semibold text-slate-950">
-                Pilih alur kerja
-              </h2>
-              <ul className="mt-2 divide-y divide-slate-200">
-                {[
-                  {
-                    href: "/campaigns",
-                    title: "Kesehatan kampanye",
-                    description: "Tinjau metrik dan temuan per kampanye.",
-                  },
-                  {
-                    href: "/scenarios",
-                    title: "Skenario diagnostik",
-                    description: "Filter temuan berdasarkan kondisi.",
-                  },
-                  {
-                    href: "/decisions",
-                    title: "Inbox keputusan",
-                    description: "Tinjau rekomendasi yang tersimpan.",
-                  },
-                  {
-                    href: "/experiments",
-                    title: "Experiment Lab",
-                    description: "Evaluasi varian dengan data kampanye.",
-                  },
-                  {
-                    href: "/compare",
-                    title: "Bandingkan dataset",
-                    description: "Periksa perbedaan metrik dua dataset.",
-                  },
-                ].map((workflow) => (
-                  <li key={workflow.href}>
+              <ul className="mt-3 divide-y divide-slate-200">
+                {experience.focusLinks.map((item) => (
+                  <li key={item.href}>
                     <Link
-                      href={workflow.href}
+                      href={item.href}
                       className="block min-h-11 py-3 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                     >
                       <span className="block text-sm font-semibold text-slate-900">
-                        {workflow.title}
+                        {item.label}
                       </span>
                       <span className="mt-1 block text-sm text-slate-700">
-                        {workflow.description}
+                        {item.description}
                       </span>
                     </Link>
                   </li>
                 ))}
               </ul>
-            </nav>
+            </article>
+
           </div>
         </section>
 

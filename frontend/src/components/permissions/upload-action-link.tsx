@@ -19,12 +19,7 @@ export default function UploadActionLink({
   const { user } = useAuth();
 
   if (!canWriteCampaignData(user?.organization_role)) {
-    return (
-      <p role="note" className="mt-3 text-sm leading-6 text-slate-700">
-        Anda dapat meninjau data. Minta Owner, Admin, atau tim marketing untuk
-        mengunggah dataset.
-      </p>
-    );
+    return null;
   }
 
   return (

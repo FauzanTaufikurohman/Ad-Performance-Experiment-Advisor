@@ -76,21 +76,62 @@ func SetupRoutes(pool *pgxpool.Pool) *gin.Engine {
 
 	router.POST("/api/auth/register", handlers.Register(pool))
 	router.POST("/api/auth/login", handlers.Login(pool))
+	router.POST("/api/auth/invitations/accept", handlers.AcceptOrganizationInvitation(pool))
 
 	protected := router.Group("/api")
 	protected.Use(middleware.RequireAuth(pool))
-	protected.GET("/auth/me", handlers.CurrentUser(pool))
-	protected.POST("/auth/organizations/select", handlers.SelectOrganization(pool))
-	protected.GET("/organizations/current", handlers.GetCurrentOrganization(pool))
-	protected.GET("/organizations/members", handlers.GetOrganizationMembers(pool))
+	protected.GET("/auth/me", middleware.RequireHuman(), handlers.CurrentUser(pool))
+	protected.POST("/auth/organizations/select", middleware.RequireHuman(), handlers.SelectOrganization(pool))
+	protected.GET("/organizations/current", middleware.RequireHuman(), handlers.GetCurrentOrganization(pool))
+	protected.GET("/organizations/members", middleware.RequireHuman(), handlers.GetOrganizationMembers(pool))
 	protected.POST(
 		"/organizations/members",
+		middleware.RequireHuman(),
 		middleware.RequireRoles(
 			middleware.RolePlatformSuperAdmin,
 			middleware.RoleOrganizationOwner,
 			middleware.RoleOrganizationAdmin,
 		),
 		handlers.AddOrganizationMember(pool),
+	)
+	protected.POST(
+		"/organizations/invitations",
+		middleware.RequireHuman(),
+		middleware.RequireRoles(
+			middleware.RolePlatformSuperAdmin,
+			middleware.RoleOrganizationOwner,
+			middleware.RoleOrganizationAdmin,
+		),
+		handlers.CreateOrganizationInvitation(pool),
+	)
+	serviceIdentityManagers := middleware.RequireRoles(
+		middleware.RolePlatformSuperAdmin,
+		middleware.RoleOrganizationOwner,
+		middleware.RoleOrganizationAdmin,
+	)
+	protected.GET(
+		"/organizations/service-identities",
+		middleware.RequireHuman(),
+		serviceIdentityManagers,
+		handlers.GetServiceIdentities(pool),
+	)
+	protected.POST(
+		"/organizations/service-identities",
+		middleware.RequireHuman(),
+		serviceIdentityManagers,
+		handlers.CreateServiceIdentity(pool),
+	)
+	protected.POST(
+		"/organizations/service-identities/:id/revoke",
+		middleware.RequireHuman(),
+		serviceIdentityManagers,
+		handlers.RevokeServiceIdentity(pool),
+	)
+	protected.POST(
+		"/platform/users/:id/status",
+		middleware.RequireHuman(),
+		middleware.RequireRoles(middleware.RolePlatformSuperAdmin),
+		handlers.SetUserStatus(pool),
 	)
 	protected.POST(
 		"/uploads",

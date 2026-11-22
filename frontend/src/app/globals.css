@@ -2,13 +2,29 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
+  --background: #0b1120;
+  --foreground: #e2e8f0;
+  --muted: #a8b5c8;
+  --border: #334155;
+  --surface: #111b2d;
+  --primary: #38bdf8;
+  --primary-hover: #7dd3fc;
+  --focus: #38bdf8;
+  --control-border: #64748b;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
   --background: #ffffff;
   --foreground: #0f172a;
   --muted: #64748b;
-  --border: #e2e8f0;
+  --border: #cbd5e1;
   --surface: #f8fafc;
   --primary: #1d4ed8;
   --primary-hover: #1e40af;
+  --focus: #1d4ed8;
+  --control-border: #7c8ea6;
 }
 
 @theme inline {
@@ -56,11 +72,166 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #1d4ed8;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
 ::selection {
   background: #dbeafe;
   color: #1e3a8a;
+}
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"] .bg-slate-50\/60,
+[data-theme="dark"] .bg-slate-50\/80 {
+  background-color: var(--surface);
+}
+
+[data-theme="dark"] .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .bg-blue-50,
+[data-theme="dark"] .bg-blue-50\/50 {
+  background-color: #172554;
+}
+
+[data-theme="dark"] .bg-red-50 {
+  background-color: #450a0a;
+}
+
+[data-theme="dark"] .bg-red-100 {
+  background-color: #7f1d1d;
+}
+
+[data-theme="dark"] .bg-amber-50 {
+  background-color: #451a03;
+}
+
+[data-theme="dark"] .bg-emerald-50 {
+  background-color: #052e25;
+}
+
+[data-theme="dark"] .bg-blue-800 {
+  background-color: #1d4ed8;
+}
+
+[data-theme="dark"] .bg-blue-900 {
+  background-color: #1e40af;
+}
+
+[data-theme="dark"] .text-slate-950,
+[data-theme="dark"] .text-slate-900 {
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-slate-700 {
+  color: #dbe5f1;
+}
+
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-500,
+[data-theme="dark"] .text-slate-400 {
+  color: #a8b5c8;
+}
+
+[data-theme="light"] .text-slate-400,
+[data-theme="dark"] .placeholder\:text-slate-400::placeholder,
+[data-theme="light"] .placeholder\:text-slate-400::placeholder {
+  color: var(--muted);
+}
+
+[data-theme="dark"] .text-blue-900,
+[data-theme="dark"] .text-blue-800,
+[data-theme="dark"] .text-blue-700 {
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .text-red-950,
+[data-theme="dark"] .text-red-900,
+[data-theme="dark"] .text-red-800,
+[data-theme="dark"] .text-red-700 {
+  color: #fecaca;
+}
+
+[data-theme="dark"] .text-amber-950,
+[data-theme="dark"] .text-amber-800,
+[data-theme="dark"] .text-amber-700 {
+  color: #fde68a;
+}
+
+[data-theme="dark"] .text-emerald-950,
+[data-theme="dark"] .text-emerald-700 {
+  color: #a7f3d0;
+}
+
+[data-theme="dark"] .border-slate-100,
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-300,
+[data-theme="dark"] .border-slate-400 {
+  border-color: var(--control-border);
+}
+
+[data-theme="dark"] .border-blue-300,
+[data-theme="dark"] .border-blue-400,
+[data-theme="dark"] .border-blue-500 {
+  border-color: #60a5fa;
+}
+
+[data-theme="dark"] .border-red-200,
+[data-theme="dark"] .border-red-300,
+[data-theme="dark"] .border-red-400,
+[data-theme="dark"] .border-red-700 {
+  border-color: #f87171;
+}
+
+[data-theme="dark"] .border-amber-200,
+[data-theme="dark"] .border-amber-400 {
+  border-color: #fbbf24;
+}
+
+[data-theme="dark"] .border-emerald-300 {
+  border-color: #34d399;
+}
+
+[data-theme="dark"] .divide-slate-100 > :not(:last-child),
+[data-theme="dark"] .divide-slate-200 > :not(:last-child),
+[data-theme="dark"] .divide-slate-300 > :not(:last-child) {
+  border-color: #334155;
+}
+
+[data-theme="dark"] .ring-slate-200,
+[data-theme="dark"] .ring-slate-300 {
+  --tw-ring-color: #475569;
+}
+
+[data-theme="dark"] .ring-blue-100,
+[data-theme="dark"] .ring-emerald-100,
+[data-theme="dark"] .ring-emerald-200,
+[data-theme="dark"] .ring-red-200,
+[data-theme="dark"] .ring-amber-200 {
+  --tw-ring-color: #64748b;
+}
+
+[data-theme="dark"] .hover\:bg-slate-50:hover,
+[data-theme="dark"] .hover\:bg-slate-100:hover {
+  background-color: #263449;
+}
+
+[data-theme="dark"] .focus-visible\:outline-blue-700:focus-visible,
+[data-theme="dark"] .focus-visible\:outline-blue-800:focus-visible {
+  outline-color: #38bdf8;
+}
+
+button.border-slate-300,
+button.border-slate-400,
+input.border-slate-300,
+input.border-slate-400,
+select.border-slate-300,
+select.border-slate-400,
+textarea.border-slate-300,
+textarea.border-slate-400 {
+  border-color: var(--control-border);
 }

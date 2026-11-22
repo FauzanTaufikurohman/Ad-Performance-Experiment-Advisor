@@ -5,6 +5,7 @@ import "./globals.css";
 import "./auth/auth.css";
 import AppShell from "@/components/layout/app-shell";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Advisora — Ad Performance Advisor",
+    default: "Advisora: Ad Performance Advisor",
     template: "%s | Advisora",
   },
   description:
@@ -33,12 +34,15 @@ export default function RootLayout({
   return (
     <html
       lang="id"
+      data-theme="dark"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-white font-sans text-slate-900">
-        <AuthProvider>
-          <AppShell>{children}</AppShell>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <AppShell>{children}</AppShell>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

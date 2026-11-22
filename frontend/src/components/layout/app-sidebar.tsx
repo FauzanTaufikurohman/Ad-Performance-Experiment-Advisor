@@ -3,7 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/auth/auth-provider";
-import { canWriteCampaignData } from "@/lib/advisor";
+import {
+  canManageOrganizationMembers,
+  canWriteCampaignData,
+} from "@/lib/advisor";
+import { getRoleExperience } from "@/lib/role-experience";
 
 const navigation: Array<{
   label: string;
@@ -42,7 +46,7 @@ const navigation: Array<{
   },
   {
     label: "Manage",
-    items: [{ label: "Organization & members", href: "/organization" }],
+    items: [{ label: "Organization", href: "/organization" }],
   },
 ];
 
@@ -57,15 +61,48 @@ export default function AppSidebar({
 }: AppSidebarProps) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const experience = getRoleExperience(user);
   const canWrite = canWriteCampaignData(user?.organization_role);
+  const canManageMembers = canManageOrganizationMembers(
+    user?.organization_role,
+  );
+  const focusedPaths = new Set(experience.focusLinks.map((item) => item.href));
   const visibleNavigation = navigation
     .map((group) => ({
       ...group,
-      items: group.items.filter(
-        (item) => !item.requiresCampaignWrite || canWrite,
-      ),
+      sortLabel: group.label,
+      items: group.items
+        .filter(
+          (item) =>
+            (!item.requiresCampaignWrite || canWrite) &&
+            !focusedPaths.has(item.href),
+        )
+        .map((item) => ({
+          ...item,
+          label:
+            item.href === "/experiments" && !canWrite
+              ? "Experiment history"
+              : group.label === "Manage" && canManageMembers
+                ? "Organization & members"
+                : item.label,
+        })),
+      label:
+        group.label === "Manage" && canManageMembers
+          ? "Manage"
+          : group.label === "Manage"
+            ? "Organization"
+            : group.label,
     }))
-    .filter((group) => group.items.length > 0);
+    .filter((group) => group.items.length > 0)
+    .sort(
+      (left, right) =>
+        (experience.navigationOrder.indexOf(left.sortLabel) < 0
+          ? Number.MAX_SAFE_INTEGER
+          : experience.navigationOrder.indexOf(left.sortLabel)) -
+        (experience.navigationOrder.indexOf(right.sortLabel) < 0
+          ? Number.MAX_SAFE_INTEGER
+          : experience.navigationOrder.indexOf(right.sortLabel)),
+    );
 
   return (
     <>
@@ -105,6 +142,42 @@ export default function AppSidebar({
         </Link>
 
         <nav className="flex-1 space-y-6 overflow-y-auto px-3 py-5">
+          <section aria-labelledby="nav-role-focus">
+            <h2
+              id="nav-role-focus"
+              className="mb-2 px-3 text-xs font-semibold text-slate-600"
+            >
+              Fokus: {experience.label}
+            </h2>
+            <ul className="space-y-1">
+              {experience.focusLinks
+                .filter((item) => item.href !== "/uploads/new" || canWrite)
+                .map((item) => {
+                const active =
+                  item.href === "/"
+                    ? pathname === "/"
+                    : pathname === item.href ||
+                      pathname.startsWith(`${item.href}/`);
+
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      onClick={onNavigate}
+                      aria-current={active ? "page" : undefined}
+                      className={`flex min-h-11 items-center rounded-md px-3 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700 ${
+                        active
+                          ? "bg-blue-50 font-semibold text-blue-800"
+                          : "text-slate-700 hover:bg-slate-100 hover:text-slate-950"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
           {visibleNavigation.map((group) => (
             <section key={group.label} aria-labelledby={`nav-${group.label}`}>
               <h2

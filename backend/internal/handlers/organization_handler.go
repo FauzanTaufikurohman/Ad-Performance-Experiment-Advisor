@@ -23,6 +23,7 @@ type organizationMember struct {
 	Name     string    `json:"name"`
 	Email    string    `json:"email"`
 	Role     string    `json:"role"`
+	IsActive bool      `json:"is_active"`
 	JoinedAt time.Time `json:"joined_at"`
 }
 
@@ -74,7 +75,7 @@ func GetOrganizationMembers(pool *pgxpool.Pool) gin.HandlerFunc {
 		defer cancel()
 
 		rows, err := pool.Query(ctx, `
-			SELECT u.id, u.name, u.email, m.role, m.created_at
+			SELECT u.id, u.name, u.email, m.role, u.is_active, m.created_at
 			FROM organization_memberships m
 			JOIN users u ON u.id = m.user_id
 			WHERE m.organization_id = $1
@@ -105,6 +106,7 @@ func GetOrganizationMembers(pool *pgxpool.Pool) gin.HandlerFunc {
 				&member.Name,
 				&member.Email,
 				&member.Role,
+				&member.IsActive,
 				&member.JoinedAt,
 			); err != nil {
 				log.Printf("ERROR: gagal membaca anggota organisasi %d: %v", claims.OrganizationID, err)
